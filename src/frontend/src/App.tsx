@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import TimelineView from "./components/TimelineView";
+import BudgetView from "./components/budget/BudgetView";
 import { useProfile } from "./hooks/useProfile";
 import { useStableActor } from "./hooks/useStableActor";
 import { useStableIdentity } from "./hooks/useStableIdentity";
@@ -263,6 +264,11 @@ export default function App() {
               onArchiveProject={handleArchiveProject}
               onCreateProject={handleCreateProject}
             />
+          );
+        }
+        if (activeBoardTab === "budget") {
+          return (
+            <BudgetView projects={projects} stages={stages} tasks={tasks} />
           );
         }
         return (
