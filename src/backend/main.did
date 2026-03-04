@@ -1,0 +1,36 @@
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+service : {
+  _initializeAccessControlWithSecret: (userSecret: text) -> ();
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  getAllUserProfiles: () ->
+   (variant {
+      err: text;
+      ok: vec record {
+                text;
+                text;
+              };
+    }) query;
+  getCallerUserProfile: () -> (variant {
+                                 err: text;
+                                 ok: text;
+                               }) query;
+  getCallerUserRole: () -> (UserRole) query;
+  isCallerAdmin: () -> (bool) query;
+  loadAppState: () -> (variant {
+                         err: text;
+                         ok: text;
+                       }) query;
+  saveAppState: (stateJson: text) -> (variant {
+                                        err: text;
+                                        ok;
+                                      });
+  saveCallerUserProfile: (profileJson: text) -> (variant {
+                                                   err: text;
+                                                   ok;
+                                                 });
+}
