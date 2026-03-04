@@ -194,7 +194,7 @@ export function BoardPage({ activeTab = "board" }: { activeTab?: string }) {
       .filter((s) => s.projectId === focused.id)
       .sort((a, b) => a.order - b.order);
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col flex-1 min-h-0">
         <div className="px-6 py-3 flex items-center gap-3 flex-shrink-0 border-b">
           <button
             type="button"
@@ -219,98 +219,108 @@ export function BoardPage({ activeTab = "board" }: { activeTab?: string }) {
             <Plus className="w-3.5 h-3.5" /> Add Stage
           </button>
         </div>
-        <div className="flex-1 overflow-x-auto overflow-y-hidden">
-          <div
-            className="flex gap-4 p-6 h-full items-start"
-            style={{ minWidth: "max-content" }}
-          >
-            {pStages.map((stage, stageIdx) => {
-              const sTasks = tasks
-                .filter((t) => t.stageId === stage.id && !t.archived)
-                .sort((a, b) => a.order - b.order);
-              return (
-                <div
-                  key={stage.id}
-                  className="w-[280px] flex-shrink-0 flex flex-col rounded-xl border bg-card"
-                  style={{ height: "calc(100vh - 12rem)" }}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => onDrop(e, stage.id)}
-                  data-ocid={`board.kanban.stage.${stageIdx + 1}`}
-                >
-                  <div className="p-3 flex items-center gap-2 border-b">
-                    <div
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{
-                        background:
-                          stage.color === "#ffffff"
-                            ? "hsl(var(--muted))"
-                            : stage.color,
-                      }}
-                    />
-                    <span className="text-sm font-semibold flex-1 truncate">
-                      {stage.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {sTasks.length}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => deleteStage(stage.id)}
-                      className="text-muted-foreground hover:text-destructive p-0.5"
-                      data-ocid={`board.kanban.stage.delete_button.${stageIdx + 1}`}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                    {sTasks.map((task, taskIdx) => (
-                      <div
-                        key={task.id}
-                        draggable
-                        onDragStart={(e) => onDragStart(e, task.id)}
-                        onClick={() => setEditingTask(task)}
-                        onKeyDown={(e) =>
-                          e.key === "Enter" && setEditingTask(task)
-                        }
-                        className="p-3 rounded-lg border bg-background cursor-pointer hover:border-primary/40 transition-colors"
-                        data-ocid={`board.kanban.task.item.${taskIdx + 1}`}
-                      >
-                        <p className="text-sm font-medium">{task.title}</p>
-                        <div className="flex gap-1.5 mt-1.5">
-                          <span
-                            className={`text-xs px-1.5 py-0.5 rounded ${task.status === "done" ? "bg-green-500/15 text-green-500" : task.status === "inProgress" ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground"}`}
-                          >
-                            {task.status === "inProgress"
-                              ? "In Progress"
-                              : task.status === "done"
-                                ? "Done"
-                                : "Todo"}
-                          </span>
-                          {task.priority && (
-                            <span
-                              className={`text-xs px-1.5 py-0.5 rounded ${task.priority === "high" ? "bg-red-500/15 text-red-500" : task.priority === "medium" ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground"}`}
-                            >
-                              {task.priority}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="p-2 border-t">
-                    <button
-                      type="button"
-                      onClick={() => addTask(stage.id)}
-                      className="w-full flex items-center gap-1.5 justify-center text-xs py-2 rounded-lg border border-dashed text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
-                      data-ocid={`board.kanban.stage.add_task_button.${stageIdx + 1}`}
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Add Task
-                    </button>
-                  </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-3">
+          {pStages.map((stage, stageIdx) => {
+            const sTasks = tasks
+              .filter((t) => t.stageId === stage.id && !t.archived)
+              .sort((a, b) => a.order - b.order);
+            return (
+              <div
+                key={stage.id}
+                className="rounded-lg border bg-card shadow-sm"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => onDrop(e, stage.id)}
+                data-ocid={`board.kanban.stage.${stageIdx + 1}`}
+              >
+                <div className="px-3 py-2 flex items-center gap-2 border-b">
+                  <div
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{
+                      background:
+                        stage.color === "#ffffff"
+                          ? "hsl(var(--muted))"
+                          : stage.color,
+                    }}
+                  />
+                  <span className="text-sm font-semibold flex-1">
+                    {stage.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({sTasks.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => deleteStage(stage.id)}
+                    className="text-muted-foreground hover:text-destructive p-0.5"
+                    data-ocid={`board.kanban.stage.delete_button.${stageIdx + 1}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-              );
-            })}
-          </div>
+                <div className="p-2 space-y-2">
+                  {sTasks.map((task, taskIdx) => (
+                    <div
+                      key={task.id}
+                      draggable
+                      onDragStart={(e) => onDragStart(e, task.id)}
+                      onClick={() => setEditingTask(task)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && setEditingTask(task)
+                      }
+                      className="p-3 rounded-lg border bg-background cursor-pointer hover:border-primary/40 transition-colors"
+                      data-ocid={`board.kanban.task.item.${taskIdx + 1}`}
+                    >
+                      <p className="text-sm font-medium">{task.title}</p>
+                      <div className="flex gap-1.5 mt-1.5">
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded ${task.status === "done" ? "bg-green-500/15 text-green-500" : task.status === "inProgress" ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground"}`}
+                        >
+                          {task.status === "inProgress"
+                            ? "In Progress"
+                            : task.status === "done"
+                              ? "Done"
+                              : "Todo"}
+                        </span>
+                        {task.priority && (
+                          <span
+                            className={`text-xs px-1.5 py-0.5 rounded ${task.priority === "high" ? "bg-red-500/15 text-red-500" : task.priority === "medium" ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground"}`}
+                          >
+                            {task.priority}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => addTask(stage.id)}
+                    className="w-full flex items-center gap-1.5 justify-center text-xs py-2 rounded-lg border border-dashed text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                    data-ocid={`board.kanban.stage.add_task_button.${stageIdx + 1}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Task
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {pStages.length === 0 && (
+            <div
+              className="text-center py-12"
+              data-ocid="board.kanban.empty_state"
+            >
+              <p className="text-sm text-muted-foreground mb-3">
+                No stages yet
+              </p>
+              <button
+                type="button"
+                onClick={addStage}
+                className="text-sm font-medium text-primary"
+                data-ocid="board.kanban.empty_state.primary_button"
+              >
+                Add your first stage
+              </button>
+            </div>
+          )}
         </div>
         <TaskEditModal
           task={editingTask}
