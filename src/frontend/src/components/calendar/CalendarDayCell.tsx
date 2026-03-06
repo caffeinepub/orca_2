@@ -5,6 +5,7 @@ import {
   isSameDay,
   isStartDate,
 } from "@/utils/calendarUtils";
+import { getHolidaysOnDate } from "@/utils/holidays";
 
 interface StageEvent {
   id: string;
@@ -89,6 +90,15 @@ export default function CalendarDayCell({
               {ev.label}
             </div>
           ))}
+        {getHolidaysOnDate(date).map((h) => (
+          <div
+            key={h.id}
+            className="text-[10px] px-1 py-0.5 rounded truncate bg-amber-100 text-amber-800"
+            title={`${h.memberName} on holiday`}
+          >
+            🌴 {h.memberName}
+          </div>
+        ))}
         {overflow > 0 && (
           <div className="text-[9px] text-gray-400 px-1">+{overflow} more</div>
         )}

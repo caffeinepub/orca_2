@@ -1,13 +1,50 @@
+export type AppRole = "Super Admin" | "Admin" | "Standard" | "Freelancer";
+export type NavPage =
+  | "board"
+  | "files"
+  | "calendar"
+  | "timeline"
+  | "team"
+  | "messages"
+  | "sales"
+  | "analysis"
+  | "settings";
+export type Feature =
+  | "view_all_projects"
+  | "create_project"
+  | "edit_project"
+  | "delete_project"
+  | "create_stage"
+  | "edit_stage"
+  | "create_task"
+  | "edit_any_task"
+  | "view_admin_folders"
+  | "delete_any_file"
+  | "share_folders"
+  | "manage_team"
+  | "change_roles"
+  | "view_permissions_grid"
+  | "timesheet_summary"
+  | "hr_folders"
+  | "resource_planning";
+export const ROLE_HIERARCHY: AppRole[] = [
+  "Super Admin",
+  "Admin",
+  "Standard",
+  "Freelancer",
+];
+
 export interface TeamMember {
   id: string;
   name: string;
   initials: string;
-  role: "Admin" | "Standard" | "Freelancer";
+  role: AppRole;
   avatarColor: string;
   isPlaceholder: boolean;
   jobTitle?: string;
   email?: string;
   permission?: "View Only" | "Can Edit" | "Full Access";
+  allowedPages?: NavPage[];
 }
 
 export interface Project {

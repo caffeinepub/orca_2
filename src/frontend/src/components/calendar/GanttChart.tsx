@@ -4,6 +4,7 @@ import {
   getMonthMarkers,
   toDateKey,
 } from "@/utils/calendarUtils";
+import { getApprovedHolidays, isOnHoliday } from "@/utils/holidays";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import GanttLeftPanel from "./GanttLeftPanel";
@@ -80,6 +81,8 @@ export default function GanttChart({
     indent: number;
     projectId?: string;
     stageId?: string;
+    startDate?: string;
+    endDate?: string;
   }> = [];
   for (const proj of projects.filter((p) => !p.archived)) {
     rows.push({
@@ -109,6 +112,28 @@ export default function GanttChart({
           stageId: stage.id,
         });
       }
+    }
+  }
+
+  // Add holiday rows
+  const approvedHolidays = getApprovedHolidays();
+  if (approvedHolidays.length > 0) {
+    rows.push({
+      type: "header",
+      id: "holidays-header",
+      label: "🌴 Holidays",
+      indent: 0,
+    });
+    for (const h of approvedHolidays) {
+      rows.push({
+        type: "holiday",
+        id: h.id,
+        label: h.memberName,
+        startDate: h.startDate,
+        endDate: h.endDate,
+        indent: 1,
+        color: "#fef3c7",
+      });
     }
   }
 
@@ -493,7 +518,64 @@ export default function GanttChart({
                     </div>
                   );
                 }
-                // project row
+                // holiday row
+                if (row.type === "holiday" && row.startDate && row.endDate) {
+                  const sIdx = dateIndex(new Date(row.startDate));
+                  const eIdx = dateIndex(new Date(row.endDate));
+                  if (sIdx >= 0 && eIdx >= 0) {
+                    const barLeft = sIdx * dayWidth;
+                    const barWidth = (eIdx - sIdx + 1) * dayWidth;
+                    return (
+                      <div
+                        key={row.id}
+                        className="absolute border-b"
+                        style={{
+                          top,
+                          left: 0,
+                          width: totalWidth,
+                          height: ROW_H,
+                          borderColor: "#e5e7eb",
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "4px",
+                            left: `${barLeft}px`,
+                            width: `${barWidth}px`,
+                            height: `${ROW_H - 8}px`,
+                            backgroundColor: "#fef3c7",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            paddingLeft: "8px",
+                            fontSize: "11px",
+                            fontWeight: 500,
+                            color: "#92400e",
+                            border: "1px solid #fde68a",
+                            zIndex: 2,
+                          }}
+                        >
+                          🌴 {row.label}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={row.id}
+                      className="absolute border-b"
+                      style={{
+                        top,
+                        left: 0,
+                        width: totalWidth,
+                        height: ROW_H,
+                        borderColor: "#e5e7eb",
+                      }}
+                    />
+                  );
+                }
+                // project/header row
                 return (
                   <div
                     key={row.id}
@@ -526,6 +608,29 @@ export default function GanttChart({
                     {dates.map((d) => {
                       const key = toDateKey(d);
                       const val = resourceDays[m.id]?.[key] || 0;
+                      const onHol = isOnHoliday(m.id, key);
+                      if (onHol) {
+                        return (
+                          <div
+                            key={key}
+                            style={{
+                              width: `${dayWidth}px`,
+                              height: "100%",
+                              borderRight: "1px solid #e5e7eb",
+                              backgroundColor: "#fef3c7",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "9px",
+                              color: "#92400e",
+                              flexShrink: 0,
+                            }}
+                            title={`${m.name} on holiday`}
+                          >
+                            🌴
+                          </div>
+                        );
+                      }
                       return (
                         <div
                           key={key}

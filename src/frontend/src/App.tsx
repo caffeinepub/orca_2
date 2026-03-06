@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import TimelineView from "./components/TimelineView";
@@ -17,8 +17,8 @@ import { LoginPage } from "./pages/LoginPage";
 import { MessagesPage } from "./pages/MessagesPage";
 import { ProfileSetupPage } from "./pages/ProfileSetupPage";
 import { SalesPage } from "./pages/SalesPage";
-import { SettingsPage } from "./pages/SettingsPage";
-import { TeamPage } from "./pages/TeamPage";
+import SettingsPage from "./pages/SettingsPage";
+import TeamPage from "./pages/TeamPage";
 import type { Project, Stage, Task } from "./types";
 import {
   generateId,
@@ -50,6 +50,17 @@ export default function App() {
   const { identity, isInitializing } = useStableIdentity();
   const { actor } = useStableActor();
   const { profile, profileLoading } = useProfile();
+
+  const currentPrincipal = identity?.getPrincipal()?.toString() || "";
+
+  const profileData = useMemo(() => {
+    if (!profile) return null;
+    try {
+      return JSON.parse(profile);
+    } catch {
+      return null;
+    }
+  }, [profile]);
 
   const [activePage, setActivePage] = useState<Page>("board");
   const [activeBoardTab, setActiveBoardTab] = useState<BoardTab>("board");
@@ -116,6 +127,51 @@ export default function App() {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
+
+  // Auto-add current user to all projects as a team member (Super Admin)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally using projects.length to avoid infinite loop
+  useEffect(() => {
+    if (!currentPrincipal || !profileData || projects.length === 0) return;
+
+    const userId = currentPrincipal;
+    const userName = profileData.fullName || "User";
+    const initials = userName
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+    let changed = false;
+    const updatedProjects = projects.map((p) => {
+      if (p.archived) return p;
+      const members = p.teamMembers || [];
+      if (members.some((m) => m.id === userId)) return p;
+
+      changed = true;
+      return {
+        ...p,
+        teamMembers: [
+          ...members,
+          {
+            id: userId,
+            name: userName,
+            initials,
+            role: "Super Admin" as const,
+            avatarColor: "#1982c4",
+            isPlaceholder: false,
+            jobTitle: profileData.jobTitle || "",
+            email: "",
+          },
+        ],
+      };
+    });
+
+    if (changed) {
+      setProjects(updatedProjects);
+      saveProjects(updatedProjects);
+    }
+  }, [currentPrincipal, profileData, projects.length]);
 
   // Apply theme to document
   useEffect(() => {
@@ -331,7 +387,14 @@ export default function App() {
           />
         );
       case "team":
-        return <TeamPage />;
+        return (
+          <TeamPage
+            projects={projects}
+            onUpdateProject={handleUpdateProject}
+            currentUserRole={"Super Admin"}
+            currentUserId={currentPrincipal}
+          />
+        );
       case "messages":
         return <MessagesPage />;
       case "sales":
@@ -339,7 +402,7 @@ export default function App() {
       case "analysis":
         return <AnalysisPage />;
       case "settings":
-        return <SettingsPage />;
+        return <SettingsPage currentUserRole={"Super Admin"} />;
       default:
         return null;
     }
