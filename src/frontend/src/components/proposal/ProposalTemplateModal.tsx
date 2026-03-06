@@ -1,3 +1,4 @@
+import { triggerCloudSync } from "@/utils/storage";
 import { Save, Trash2, Upload, X } from "lucide-react";
 import { useState } from "react";
 
@@ -39,6 +40,7 @@ export default function ProposalTemplateModal({
   const save = (t: ProposalTemplate[]) => {
     setTemplates(t);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(t));
+    triggerCloudSync();
   };
 
   const handleSave = () => {

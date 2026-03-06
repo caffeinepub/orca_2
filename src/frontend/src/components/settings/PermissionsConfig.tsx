@@ -6,6 +6,7 @@ import {
   loadPermissionsConfig,
   savePermissionsConfig,
 } from "@/utils/permissions";
+import { triggerCloudSync } from "@/utils/storage";
 import { Check, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -20,6 +21,7 @@ export default function PermissionsConfig({ currentUserRole }: Props) {
 
   useEffect(() => {
     savePermissionsConfig(config);
+    triggerCloudSync();
   }, [config]);
 
   const toggle = (role: AppRole, feature: Feature) => {

@@ -5,6 +5,7 @@ import {
   toDateKey,
 } from "@/utils/calendarUtils";
 import { getApprovedHolidays, isOnHoliday } from "@/utils/holidays";
+import { triggerCloudSync } from "@/utils/storage";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import GanttLeftPanel from "./GanttLeftPanel";
@@ -666,6 +667,7 @@ export default function GanttChart({
                                   "orca_resource_days",
                                   JSON.stringify(updated),
                                 );
+                                triggerCloudSync();
                               }}
                               className="w-full text-center text-[9px] bg-transparent border-0 focus:outline-none p-0"
                             />

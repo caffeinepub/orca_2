@@ -35,6 +35,12 @@ export default function StageSection({
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const taskInputRef = useRef<HTMLInputElement>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitle, setEditTitle] = useState(stage.name);
+  const [isEditingDates, setIsEditingDates] = useState(false);
+  const [editStart, setEditStart] = useState(stage.startDate || "");
+  const [editEnd, setEditEnd] = useState(stage.endDate || "");
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isAddingTask && taskInputRef.current) taskInputRef.current.focus();
@@ -94,22 +100,64 @@ export default function StageSection({
         style={{ backgroundColor: stage.color || "rgba(255,255,255,0.9)" }}
       >
         <div className="flex justify-between items-center mb-2">
-          <button
-            type="button"
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center gap-1"
-            data-ocid="stage.collapse.toggle"
-          >
-            {collapsed ? (
-              <ChevronRight className="w-4 h-4" aria-hidden="true" />
+          <div className="flex items-center gap-1 flex-1 min-w-0">
+            <button
+              type="button"
+              onClick={() => setCollapsed(!collapsed)}
+              className="flex items-center gap-0.5 flex-shrink-0"
+              data-ocid="stage.collapse.toggle"
+            >
+              {collapsed ? (
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
+              ) : (
+                <ChevronDown className="w-4 h-4" aria-hidden="true" />
+              )}
+            </button>
+            {isEditingTitle ? (
+              <input
+                ref={titleInputRef}
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onBlur={() => {
+                  const trimmed = editTitle.trim();
+                  if (trimmed && trimmed !== stage.name)
+                    onUpdate({ name: trimmed });
+                  setIsEditingTitle(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.currentTarget.blur();
+                  }
+                  if (e.key === "Escape") {
+                    setEditTitle(stage.name);
+                    setIsEditingTitle(false);
+                  }
+                }}
+                className="font-medium text-sm bg-white/70 border border-gray-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500 flex-1 min-w-0"
+                onClick={(e) => e.stopPropagation()}
+                // biome-ignore lint/a11y/noAutofocus: inline editing requires auto-focus
+                autoFocus
+                data-ocid="stage.title.input"
+              />
             ) : (
-              <ChevronDown className="w-4 h-4" aria-hidden="true" />
+              <button
+                type="button"
+                className="font-medium text-sm cursor-pointer hover:bg-white/30 rounded px-1 truncate text-left"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditingTitle(true);
+                  setEditTitle(stage.name);
+                }}
+                title="Click to edit"
+                data-ocid="stage.title.button"
+              >
+                {stage.name}
+              </button>
             )}
-            <span className="font-medium text-sm">{stage.name}</span>
-            <span className="text-xs text-gray-500 ml-2">
+            <span className="text-xs text-gray-500 ml-1 flex-shrink-0">
               ({visibleTasks.length})
             </span>
-          </button>
+          </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -140,11 +188,64 @@ export default function StageSection({
             </button>
           </div>
         </div>
-        {(stage.startDate || stage.endDate) && (
-          <div className="text-xs text-gray-400 ml-6 -mt-1 mb-1">
-            {fmtDate(stage.startDate) || "--/--/--"} -{" "}
-            {fmtDate(stage.endDate) || "--/--/--"}
+        {isEditingDates ? (
+          <div
+            className="flex items-center gap-1 ml-5 mt-0.5 mb-1"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <input
+              type="date"
+              value={editStart}
+              onChange={(e) => setEditStart(e.target.value)}
+              className="text-[10px] border rounded px-1 py-0.5 w-[105px]"
+            />
+            <span className="text-[10px] text-gray-400">–</span>
+            <input
+              type="date"
+              value={editEnd}
+              onChange={(e) => setEditEnd(e.target.value)}
+              className="text-[10px] border rounded px-1 py-0.5 w-[105px]"
+            />
+            <button
+              onClick={() => {
+                onUpdate({
+                  startDate: editStart || undefined,
+                  endDate: editEnd || undefined,
+                });
+                setIsEditingDates(false);
+              }}
+              className="text-[10px] text-blue-600 font-semibold hover:text-blue-800 px-1"
+              type="button"
+            >
+              ✓
+            </button>
+            <button
+              onClick={() => setIsEditingDates(false)}
+              className="text-[10px] text-gray-400 hover:text-gray-600 px-0.5"
+              type="button"
+            >
+              ✕
+            </button>
           </div>
+        ) : (
+          <button
+            type="button"
+            className="text-[10px] text-gray-400 ml-5 mt-0.5 mb-1 cursor-pointer hover:text-gray-600 text-left"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditingDates(true);
+              setEditStart(stage.startDate || "");
+              setEditEnd(stage.endDate || "");
+            }}
+            title="Click to edit dates"
+            data-ocid="stage.dates.button"
+          >
+            {stage.startDate || stage.endDate
+              ? `${fmtDate(stage.startDate) || "--/--/--"} – ${fmtDate(stage.endDate) || "--/--/--"}`
+              : "Add dates..."}
+          </button>
         )}
         {!collapsed && (
           <div

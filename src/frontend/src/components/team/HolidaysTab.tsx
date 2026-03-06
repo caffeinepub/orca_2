@@ -6,6 +6,7 @@ import {
   loadHolidays,
   saveHolidays,
 } from "@/utils/holidays";
+import { triggerCloudSync } from "@/utils/storage";
 import { Calendar, Check, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -44,6 +45,7 @@ export default function HolidaysTab({
     currentUserRole === "Super Admin" || currentUserRole === "Admin";
   useEffect(() => {
     saveHolidays(holidays);
+    triggerCloudSync();
   }, [holidays]);
 
   const currentMember = members.find((m) => m.id === currentUserId) || {

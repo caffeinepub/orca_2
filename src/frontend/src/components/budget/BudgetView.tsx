@@ -1,5 +1,6 @@
 import type { Project, Stage, Task } from "@/types";
 import type { ClientBudgetSettings, ProjectBudget } from "@/types/project";
+import { triggerCloudSync } from "@/utils/storage";
 import { useEffect, useState } from "react";
 import ClientBudgetTab from "./ClientBudgetTab";
 import WorkingBudgetTab from "./WorkingBudgetTab";
@@ -59,6 +60,7 @@ export default function BudgetView({
         storageKey,
         JSON.stringify({ ...existing, budget: newBudget }),
       );
+      triggerCloudSync();
     } catch {}
   };
 
@@ -70,6 +72,7 @@ export default function BudgetView({
         storageKey,
         JSON.stringify({ ...existing, clientSettings: settings }),
       );
+      triggerCloudSync();
     } catch {}
   };
 

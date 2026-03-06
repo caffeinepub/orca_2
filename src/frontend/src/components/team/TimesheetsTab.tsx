@@ -1,3 +1,4 @@
+import { triggerCloudSync } from "@/utils/storage";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -47,6 +48,7 @@ export default function TimesheetsTab({
 
   useEffect(() => {
     localStorage.setItem(`orca_ts_${currentUserId}`, JSON.stringify(entries));
+    triggerCloudSync();
   }, [entries, currentUserId]);
 
   const weekDates = Array.from({ length: 7 }, (_, i) => {

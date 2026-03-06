@@ -16,13 +16,19 @@ const getUserKey = (key: string): string => {
   return `${STORAGE_PREFIX}${currentPrincipal}_${key}`;
 };
 
-function triggerCloudSync() {
+export function triggerCloudSync() {
   try {
     const data: Record<string, unknown> = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key?.startsWith(STORAGE_PREFIX + currentPrincipal)) {
-        data[key] = JSON.parse(localStorage.getItem(key) || "null");
+      if (!key) continue;
+      // Sync ALL orca_ keys except theme (local preference)
+      if (key.startsWith("orca_") && key !== "orca_theme") {
+        try {
+          data[key] = JSON.parse(localStorage.getItem(key) || "null");
+        } catch {
+          data[key] = localStorage.getItem(key);
+        }
       }
     }
     scheduleCloudSave(JSON.stringify(data));
@@ -92,7 +98,12 @@ export const loadFromCloud = (cloudData: string) => {
   try {
     const data = JSON.parse(cloudData);
     for (const [key, value] of Object.entries(data)) {
-      localStorage.setItem(key, JSON.stringify(value));
+      if (key.startsWith("orca_")) {
+        localStorage.setItem(
+          key,
+          typeof value === "string" ? value : JSON.stringify(value),
+        );
+      }
     }
   } catch (e) {
     console.error("Failed to load from cloud:", e);

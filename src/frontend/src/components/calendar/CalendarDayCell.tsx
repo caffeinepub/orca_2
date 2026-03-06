@@ -66,16 +66,30 @@ export default function CalendarDayCell({
       <div className="space-y-0.5">
         {stageEvents.slice(0, maxShow).map((ev) => (
           <button
-            type="button"
             key={ev.id}
+            type="button"
             onClick={() => onStageClick(ev.stage)}
-            className="w-full text-left text-[10px] px-1 py-0.5 rounded cursor-pointer truncate hover:opacity-80"
-            style={{ backgroundColor: ev.color, color: "#374151" }}
+            className="w-full text-left text-[10px] py-0.5 cursor-pointer truncate hover:opacity-80"
+            style={{
+              backgroundColor: ev.color,
+              color: "#374151",
+              borderRadius:
+                ev.isStart && ev.isEnd
+                  ? "4px"
+                  : ev.isStart
+                    ? "4px 0 0 4px"
+                    : ev.isEnd
+                      ? "0 4px 4px 0"
+                      : "0",
+              marginLeft: ev.isStart ? "0" : "-4px",
+              marginRight: ev.isEnd ? "0" : "-4px",
+              paddingLeft: ev.isStart ? "4px" : "2px",
+              paddingRight: ev.isEnd ? "4px" : "2px",
+              display: "block",
+            }}
             title={`${ev.projectName} — ${ev.label}`}
           >
-            {ev.isStart && "▶ "}
-            {ev.isEnd && "■ "}
-            {ev.label}
+            {ev.isStart ? ev.label : "\u00A0"}
           </button>
         ))}
         {taskEvents

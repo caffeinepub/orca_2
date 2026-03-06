@@ -1,5 +1,6 @@
 import type { Project, Stage, Task } from "@/types";
 import type { CustomField, ProjectBudget } from "@/types/project";
+import { triggerCloudSync } from "@/utils/storage";
 import { ChevronDown, Download, Edit3, Eye, FileText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ProposalTemplateModal from "./ProposalTemplateModal";
@@ -62,6 +63,7 @@ export default function ProposalView({ projects, stages, tasks }: Props) {
         storageKey,
         JSON.stringify({ ...existing, proposalNotes: text }),
       );
+      triggerCloudSync();
     } catch {}
   };
 

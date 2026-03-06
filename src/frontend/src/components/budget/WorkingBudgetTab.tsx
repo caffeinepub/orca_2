@@ -273,6 +273,43 @@ export default function WorkingBudgetTab({
     );
   };
 
+  // ---- Auto-populate labour lines from team members + resource days ----
+  const autoPopulateLabour = (stageId: string): BudgetLineItem[] => {
+    const teamMembers = project.teamMembers || [];
+    if (teamMembers.length === 0) return [];
+
+    let resourceDays: Record<string, number> = {};
+    try {
+      resourceDays = JSON.parse(
+        localStorage.getItem("orca_resource_days") || "{}",
+      );
+    } catch {}
+
+    return teamMembers.map((m) => {
+      let totalDays = 0;
+      for (const [key, val] of Object.entries(resourceDays)) {
+        const parts = key.split(":");
+        if (
+          parts[0] === project.id &&
+          parts[1] === stageId &&
+          parts[2] === m.id
+        ) {
+          totalDays += Number(val) || 0;
+        }
+      }
+      return {
+        id: `line-${Date.now()}-${m.id}`,
+        stageId,
+        type: "labour" as const,
+        description: m.jobTitle || m.name,
+        days: totalDays,
+        rate: settings.defaultRate || 0,
+        markup: settings.defaultMarkup || 0,
+        contingency: settings.defaultContingency || 0,
+      };
+    });
+  };
+
   // ---- Project totals ----
   const projectTotals = calculateProjectTotals(budget);
 
@@ -607,6 +644,17 @@ export default function WorkingBudgetTab({
         const labourLines = lines.filter(
           (l) => l.type === "labour" || l.type === "labor",
         );
+        // Auto-populate labour lines from team members if stage has none
+        if (
+          labourLines.length === 0 &&
+          (project.teamMembers?.length || 0) > 0
+        ) {
+          const autoLines = autoPopulateLabour(stage.id);
+          if (autoLines.length > 0) {
+            // Use setTimeout to avoid setState during render
+            setTimeout(() => updateStageLines(stage.id, autoLines), 0);
+          }
+        }
         const otherLines = lines.filter((l) => l.type === "other");
         const stageTotals = getStageTotals(stage.id);
         const isCollapsed = collapsedStages.has(stage.id);

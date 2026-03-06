@@ -380,7 +380,6 @@ export default function TimelineView({
               position: "relative",
               display: "flex",
               minHeight: allDates.length * DAY_HEIGHT,
-              marginRight: "150px",
               scrollbarWidth: "none",
             }}
           >

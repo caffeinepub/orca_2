@@ -1,3 +1,4 @@
+import { triggerCloudSync } from "@/utils/storage";
 import { Edit2, Search, Trash2, UserPlus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -50,6 +51,7 @@ export default function RolladexTab() {
 
   useEffect(() => {
     localStorage.setItem("orca_rolladex", JSON.stringify(contacts));
+    triggerCloudSync();
   }, [contacts]);
 
   const filtered = contacts.filter((c) => {
