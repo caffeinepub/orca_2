@@ -2,91 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Bricolage Grotesque";
-  src: url("/assets/fonts/BricolageGrotesque-Variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Sora";
-  src: url("/assets/fonts/Sora-Variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Geist Mono";
-  src: url("/assets/fonts/GeistMono-Variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 @layer base {
   :root {
     --radius: 0.5rem;
 
-    /* ORCA Dark Theme — deep navy + cyan accent */
-    --background: 0.13 0.018 250;
-    --foreground: 0.93 0.01 240;
-    --card: 0.16 0.022 252;
-    --card-foreground: 0.93 0.01 240;
-    --popover: 0.18 0.025 250;
-    --popover-foreground: 0.93 0.01 240;
-
-    /* Cyan accent as primary */
-    --primary: 0.72 0.18 200;
-    --primary-foreground: 0.08 0.018 250;
-
-    --secondary: 0.21 0.028 252;
-    --secondary-foreground: 0.88 0.01 240;
-
-    --muted: 0.19 0.022 252;
-    --muted-foreground: 0.58 0.02 240;
-
-    --accent: 0.22 0.03 252;
-    --accent-foreground: 0.92 0.01 240;
-
-    --destructive: 0.62 0.22 25;
+    /* Clean light mode (ORCA Clean palette) */
+    --background: 0.98 0.002 220;
+    --foreground: 0.15 0.01 220;
+    --card: 1 0 0;
+    --card-foreground: 0.15 0.01 220;
+    --popover: 1 0 0;
+    --popover-foreground: 0.15 0.01 220;
+    --primary: 0.45 0.08 240;
+    --primary-foreground: 0.98 0.002 220;
+    --secondary: 0.96 0.005 220;
+    --secondary-foreground: 0.15 0.01 220;
+    --muted: 0.96 0.005 220;
+    --muted-foreground: 0.5 0.01 220;
+    --accent: 0.55 0.12 240;
+    --accent-foreground: 0.98 0.002 220;
+    --destructive: 0.55 0.22 25;
     --destructive-foreground: 0.98 0 0;
-
-    --border: 0.26 0.03 252;
-    --input: 0.22 0.025 252;
-    --ring: 0.72 0.18 200;
+    --border: 0.92 0.008 220;
+    --input: 0.92 0.008 220;
+    --ring: 0.55 0.12 240;
 
     /* Charts */
-    --chart-1: 0.72 0.18 200;
+    --chart-1: 0.55 0.12 240;
     --chart-2: 0.65 0.17 160;
     --chart-3: 0.78 0.15 90;
     --chart-4: 0.68 0.2 280;
     --chart-5: 0.62 0.22 25;
 
-    /* Sidebar — slightly darker than main */
-    --sidebar: 0.115 0.016 250;
-    --sidebar-foreground: 0.88 0.01 240;
-    --sidebar-primary: 0.72 0.18 200;
-    --sidebar-primary-foreground: 0.08 0.018 250;
-    --sidebar-accent: 0.18 0.025 252;
-    --sidebar-accent-foreground: 0.92 0.01 240;
-    --sidebar-border: 0.22 0.025 252;
-    --sidebar-ring: 0.72 0.18 200;
+    /* Sidebar — slightly off-white */
+    --sidebar: 0.97 0.003 220;
+    --sidebar-foreground: 0.15 0.01 220;
+    --sidebar-primary: 0.45 0.08 240;
+    --sidebar-primary-foreground: 0.98 0.002 220;
+    --sidebar-accent: 0.94 0.005 220;
+    --sidebar-accent-foreground: 0.15 0.01 220;
+    --sidebar-border: 0.92 0.008 220;
+    --sidebar-ring: 0.55 0.12 240;
+  }
+
+  .dark {
+    /* Clean dark mode */
+    --background: 0.15 0.015 220;
+    --foreground: 0.95 0.008 220;
+    --card: 0.2 0.018 220;
+    --card-foreground: 0.95 0.008 220;
+    --popover: 0.18 0.016 220;
+    --popover-foreground: 0.95 0.008 220;
+    --primary: 0.7 0.12 240;
+    --primary-foreground: 0.15 0.015 220;
+    --secondary: 0.25 0.02 220;
+    --secondary-foreground: 0.95 0.008 220;
+    --muted: 0.28 0.02 220;
+    --muted-foreground: 0.65 0.015 220;
+    --accent: 0.6 0.14 240;
+    --accent-foreground: 0.98 0.005 220;
+    --destructive: 0.6 0.24 25;
+    --destructive-foreground: 0.15 0.015 220;
+    --border: 0.3 0.02 220;
+    --input: 0.3 0.02 220;
+    --ring: 0.6 0.14 240;
+
+    /* Charts dark */
+    --chart-1: 0.7 0.12 240;
+    --chart-2: 0.65 0.17 160;
+    --chart-3: 0.78 0.15 90;
+    --chart-4: 0.68 0.2 280;
+    --chart-5: 0.62 0.22 25;
+
+    /* Sidebar dark — slightly darker than main */
+    --sidebar: 0.12 0.012 220;
+    --sidebar-foreground: 0.9 0.008 220;
+    --sidebar-primary: 0.7 0.12 240;
+    --sidebar-primary-foreground: 0.15 0.015 220;
+    --sidebar-accent: 0.22 0.018 220;
+    --sidebar-accent-foreground: 0.95 0.008 220;
+    --sidebar-border: 0.25 0.018 220;
+    --sidebar-ring: 0.6 0.14 240;
   }
 
   * {
     @apply border-border;
   }
 
-  html {
-    color-scheme: dark;
-  }
-
   body {
     @apply bg-background text-foreground;
-    font-family: "Sora", sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
     font-size: 14px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -95,33 +100,10 @@
 }
 
 @layer utilities {
-  /* Grain overlay for depth */
-  .grain-overlay {
-    position: relative;
-  }
-  .grain-overlay::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    opacity: 0.04;
-    z-index: 0;
-  }
-
-  /* Glow effect for the primary accent */
-  .glow-primary {
-    box-shadow: 0 0 20px oklch(0.72 0.18 200 / 0.3), 0 0 40px oklch(0.72 0.18 200 / 0.1);
-  }
-
-  .text-glow {
-    text-shadow: 0 0 24px oklch(0.72 0.18 200 / 0.6);
-  }
-
   /* Sidebar nav item active state */
   .nav-active {
-    background: linear-gradient(90deg, oklch(0.72 0.18 200 / 0.15) 0%, transparent 100%);
-    border-left: 2px solid oklch(0.72 0.18 200);
+    background: linear-gradient(90deg, oklch(var(--primary) / 0.15) 0%, transparent 100%);
+    border-left: 2px solid oklch(var(--primary));
   }
 
   /* Scrollbar styling */
@@ -133,10 +115,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.3 0.03 252);
+    background: oklch(var(--muted-foreground) / 0.3);
     border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.4 0.05 252);
+    background: oklch(var(--muted-foreground) / 0.5);
   }
 }

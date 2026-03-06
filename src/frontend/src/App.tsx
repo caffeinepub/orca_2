@@ -4,12 +4,14 @@ import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import TimelineView from "./components/TimelineView";
 import BudgetView from "./components/budget/BudgetView";
+import ProposalView from "./components/proposal/ProposalView";
+import TeamTalkView from "./components/teamtalk/TeamTalkView";
 import { useProfile } from "./hooks/useProfile";
 import { useStableActor } from "./hooks/useStableActor";
 import { useStableIdentity } from "./hooks/useStableIdentity";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import BoardPage from "./pages/BoardPage";
-import { CalendarPage } from "./pages/CalendarPage";
+import CalendarPage from "./pages/CalendarPage";
 import { FilesPage } from "./pages/FilesPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MessagesPage } from "./pages/MessagesPage";
@@ -52,6 +54,10 @@ export default function App() {
   const [activePage, setActivePage] = useState<Page>("board");
   const [activeBoardTab, setActiveBoardTab] = useState<BoardTab>("board");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    const saved = localStorage.getItem("orca_theme");
+    return saved === "dark" ? "dark" : "light";
+  });
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
@@ -110,6 +116,16 @@ export default function App() {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
+
+  // Apply theme to document
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("orca_theme", theme);
+  }, [theme]);
 
   const handleToggleFocus = (projectId: string) => {
     setFocusedProjectId((prev) => (prev === projectId ? null : projectId));
@@ -271,6 +287,16 @@ export default function App() {
             <BudgetView projects={projects} stages={stages} tasks={tasks} />
           );
         }
+        if (activeBoardTab === "proposal") {
+          return (
+            <ProposalView projects={projects} stages={stages} tasks={tasks} />
+          );
+        }
+        if (activeBoardTab === "teamtalk") {
+          return (
+            <TeamTalkView projects={projects} stages={stages} tasks={tasks} />
+          );
+        }
         return (
           <BoardPage
             projects={projects}
@@ -295,7 +321,15 @@ export default function App() {
       case "files":
         return <FilesPage />;
       case "calendar":
-        return <CalendarPage />;
+        return (
+          <CalendarPage
+            projects={projects}
+            stages={stages}
+            tasks={tasks}
+            onUpdateStage={handleUpdateStage}
+            onUpdateTask={handleUpdateTask}
+          />
+        );
       case "team":
         return <TeamPage />;
       case "messages":
@@ -325,6 +359,8 @@ export default function App() {
           activeBoardTab={activeBoardTab}
           onBoardTabChange={setActiveBoardTab}
           profile={profile}
+          theme={theme}
+          onToggleTheme={() => setTheme(theme === "light" ? "dark" : "light")}
         />
         <main className="flex-1 overflow-hidden">{renderPage()}</main>
       </div>

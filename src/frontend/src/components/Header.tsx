@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { useStableIdentity } from "../hooks/useStableIdentity";
 
 type Page =
@@ -52,6 +52,8 @@ interface HeaderProps {
   activeBoardTab: BoardTab;
   onBoardTabChange: (tab: BoardTab) => void;
   profile: string | null;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
 }
 
 export function Header({
@@ -59,6 +61,8 @@ export function Header({
   activeBoardTab,
   onBoardTabChange,
   profile,
+  theme,
+  onToggleTheme,
 }: HeaderProps) {
   const { clear, identity } = useStableIdentity();
 
@@ -117,6 +121,29 @@ export function Header({
 
         {/* User area */}
         <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Theme toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                data-ocid="header.theme_toggle"
+                variant="ghost"
+                size="icon"
+                onClick={onToggleTheme}
+                className="w-8 h-8 text-muted-foreground hover:text-foreground hover:bg-accent"
+              >
+                {theme === "light" ? (
+                  <Moon className="w-4 h-4" />
+                ) : (
+                  <Sun className="w-4 h-4" />
+                )}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              {theme === "light" ? "Dark mode" : "Light mode"}
+            </TooltipContent>
+          </Tooltip>
+
           {displayName && (
             <span className="text-sm text-muted-foreground hidden sm:block truncate max-w-[140px]">
               {displayName}
