@@ -20,6 +20,7 @@ interface ProjectCardProps {
   isFocused?: boolean;
   showArchived?: boolean;
   onToggleFocus?: () => void;
+  onNavigateToFiles?: (folderType: "project" | "project_admin") => void;
   onCreateStage: (name: string) => void;
   onDeleteProject: () => void;
   onUpdateProject: (name: string, color: string) => void;
@@ -38,6 +39,7 @@ export default function ProjectCard({
   isFocused,
   showArchived,
   onToggleFocus,
+  onNavigateToFiles,
   onCreateStage,
   onDeleteProject,
   onUpdateProject,
@@ -240,7 +242,7 @@ export default function ProjectCard({
             {/* 1. Files (grey) */}
             <button
               type="button"
-              onClick={() => alert("Files feature — coming in Phase 2")}
+              onClick={() => onNavigateToFiles?.("project")}
               style={{ width: "14px", height: "14px" }}
               title="Files"
               data-ocid="project.files.button"
@@ -253,7 +255,7 @@ export default function ProjectCard({
             {/* 2. Admin Files (yellow) */}
             <button
               type="button"
-              onClick={() => alert("Admin Files feature — coming in Phase 2")}
+              onClick={() => onNavigateToFiles?.("project_admin")}
               style={{ width: "14px", height: "14px" }}
               title="Admin Files"
               data-ocid="project.admin_files.button"

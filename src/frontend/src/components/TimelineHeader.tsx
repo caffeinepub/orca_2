@@ -17,6 +17,10 @@ interface TimelineHeaderProps {
   headerScrollRef: React.RefObject<HTMLDivElement | null>;
   onHeaderScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   onToggleFocus?: (projectId: string) => void;
+  onNavigateToFiles?: (
+    projectId: string,
+    folderType: "project" | "project_admin",
+  ) => void;
   onCreateStage: (projectId: string, name: string) => void;
   resourceColumnWidth: number;
 }
@@ -28,6 +32,7 @@ export default function TimelineHeader({
   headerScrollRef,
   onHeaderScroll,
   onToggleFocus,
+  onNavigateToFiles,
   onCreateStage,
   resourceColumnWidth,
 }: TimelineHeaderProps) {
@@ -71,6 +76,7 @@ export default function TimelineHeader({
                   <div className="flex items-center justify-end gap-[15px]">
                     <button
                       type="button"
+                      onClick={() => onNavigateToFiles?.(project.id, "project")}
                       style={{ width: "14px", height: "14px" }}
                       title="Files"
                     >
@@ -78,6 +84,9 @@ export default function TimelineHeader({
                     </button>
                     <button
                       type="button"
+                      onClick={() =>
+                        onNavigateToFiles?.(project.id, "project_admin")
+                      }
                       style={{ width: "14px", height: "14px" }}
                       title="Admin Files"
                     >

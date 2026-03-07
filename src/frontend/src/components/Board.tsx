@@ -13,6 +13,10 @@ interface BoardProps {
   showArchived?: boolean;
   focusedProjectId?: string | null;
   onToggleFocus?: (projectId: string) => void;
+  onNavigateToFiles?: (
+    projectId: string,
+    folderType: "project" | "project_admin",
+  ) => void;
   onCreateProject: (name: string, color: string) => void;
   onDeleteProject: (projectId: string) => void;
   onUpdateProject: (projectId: string, updates: Partial<Project>) => void;
@@ -33,6 +37,7 @@ export default function Board({
   showArchived = false,
   focusedProjectId,
   onToggleFocus,
+  onNavigateToFiles,
   onCreateProject,
   onDeleteProject,
   onUpdateProject,
@@ -142,6 +147,11 @@ export default function Board({
                 }
                 onArchiveProject={(archived) =>
                   onArchiveProject(project.id, archived)
+                }
+                onNavigateToFiles={
+                  onNavigateToFiles
+                    ? (folderType) => onNavigateToFiles(project.id, folderType)
+                    : undefined
                 }
                 onUpdateStage={onUpdateStage}
                 onDeleteStage={onDeleteStage}

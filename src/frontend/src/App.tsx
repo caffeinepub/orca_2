@@ -12,7 +12,7 @@ import { useStableIdentity } from "./hooks/useStableIdentity";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import BoardPage from "./pages/BoardPage";
 import CalendarPage from "./pages/CalendarPage";
-import { FilesPage } from "./pages/FilesPage";
+import FilesPage from "./pages/FilesPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MessagesPage } from "./pages/MessagesPage";
 import { ProfileSetupPage } from "./pages/ProfileSetupPage";
@@ -20,6 +20,7 @@ import { SalesPage } from "./pages/SalesPage";
 import SettingsPage from "./pages/SettingsPage";
 import TeamPage from "./pages/TeamPage";
 import type { Project, Stage, Task } from "./types";
+import { ensureProjectFolders } from "./utils/filesStorage";
 import {
   generateId,
   loadFromCloud,
@@ -76,6 +77,9 @@ export default function App() {
   const [searchQuery] = useState("");
   const [showArchived] = useState(false);
   const [focusedProjectId, setFocusedProjectId] = useState<string | null>(null);
+  const [filesTargetFolderId, setFilesTargetFolderId] = useState<string | null>(
+    null,
+  );
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -233,6 +237,20 @@ export default function App() {
     setFocusedProjectId((prev) => (prev === projectId ? null : projectId));
   };
 
+  const handleNavigateToFiles = (
+    projectId: string,
+    folderType: "project" | "project_admin",
+  ) => {
+    const folders = ensureProjectFolders(projects, currentPrincipal);
+    const target = folders.find(
+      (f) => f.projectId === projectId && f.type === folderType,
+    );
+    if (target) {
+      setFilesTargetFolderId(target.id);
+      setActivePage("files");
+    }
+  };
+
   const handleCreateProject = (name: string, color: string) => {
     const maxOrder = projects.reduce(
       (max, p) => Math.max(max, p.order ?? -1),
@@ -375,6 +393,7 @@ export default function App() {
               showArchived={showArchived}
               focusedProjectId={focusedProjectId}
               onToggleFocus={handleToggleFocus}
+              onNavigateToFiles={handleNavigateToFiles}
               onUpdateStage={handleUpdateStage}
               onCreateStage={handleCreateStage}
               onDeleteProject={handleDeleteProject}
@@ -408,6 +427,7 @@ export default function App() {
             showArchived={showArchived}
             focusedProjectId={focusedProjectId}
             onToggleFocus={handleToggleFocus}
+            onNavigateToFiles={handleNavigateToFiles}
             onCreateProject={handleCreateProject}
             onDeleteProject={handleDeleteProject}
             onUpdateProject={handleUpdateProject}
@@ -421,7 +441,13 @@ export default function App() {
           />
         );
       case "files":
-        return <FilesPage />;
+        return (
+          <FilesPage
+            projects={projects}
+            currentUserId={currentPrincipal}
+            targetFolderId={filesTargetFolderId}
+          />
+        );
       case "calendar":
         return (
           <CalendarPage

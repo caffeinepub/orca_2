@@ -14,6 +14,10 @@ interface TimelineViewProps {
   showArchived?: boolean;
   focusedProjectId?: string | null;
   onToggleFocus?: (projectId: string) => void;
+  onNavigateToFiles?: (
+    projectId: string,
+    folderType: "project" | "project_admin",
+  ) => void;
   onUpdateStage: (stageId: string, updates: Partial<Stage>) => void;
   onCreateStage: (projectId: string, name: string) => void;
   onDeleteProject: (projectId: string) => void;
@@ -30,6 +34,7 @@ export default function TimelineView({
   showArchived = false,
   focusedProjectId,
   onToggleFocus,
+  onNavigateToFiles,
   onUpdateStage,
   onCreateStage,
   onDeleteProject: _onDeleteProject,
@@ -186,6 +191,7 @@ export default function TimelineView({
         headerScrollRef={headerScrollRef}
         onHeaderScroll={handleHeaderScroll}
         onToggleFocus={onToggleFocus}
+        onNavigateToFiles={onNavigateToFiles}
         onCreateStage={onCreateStage}
         resourceColumnWidth={resourceColumnWidth}
       />

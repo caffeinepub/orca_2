@@ -9,6 +9,10 @@ interface BoardPageProps {
   showArchived?: boolean;
   focusedProjectId?: string | null;
   onToggleFocus?: (projectId: string) => void;
+  onNavigateToFiles?: (
+    projectId: string,
+    folderType: "project" | "project_admin",
+  ) => void;
   onCreateProject: (name: string, color: string) => void;
   onDeleteProject: (id: string) => void;
   onUpdateProject: (id: string, updates: Partial<Project>) => void;
