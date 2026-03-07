@@ -42,9 +42,7 @@ export default function GanttChart({
   const [expandedStages, setExpandedStages] = useState<Set<string>>(
     new Set(stages.map((s) => s.id)),
   );
-  const [resourceDays, setResourceDays] = useState<
-    Record<string, Record<string, number>>
-  >({});
+  const [resourceDays, setResourceDays] = useState<Record<string, number>>({});
 
   const dates = getGanttDateRange(today);
   const dateIndex = (d: Date) =>
@@ -151,8 +149,9 @@ export default function GanttChart({
     for (const m of proj.teamMembers || []) {
       if (!seen.has(m.id)) {
         seen.add(m.id);
-        const projDays = resourceDays[proj.id] || {};
-        const total = projDays[m.id] || 0;
+        const total = Object.entries(resourceDays)
+          .filter(([k]) => k.includes(`:${m.id}:`))
+          .reduce((sum, [, v]) => sum + v, 0);
         allMembers.push({
           id: m.id,
           name: m.name,
@@ -451,22 +450,44 @@ export default function GanttChart({
                           opacity: 0.85,
                         }}
                         onMouseDown={(e) => {
-                          const rect = (
-                            e.currentTarget as HTMLElement
-                          ).getBoundingClientRect();
-                          const relX = e.clientX - rect.left;
-                          const mode =
-                            relX < 6
-                              ? "resizeL"
-                              : relX > rect.width - 6
-                                ? "resizeR"
-                                : "move";
-                          handleBarMouseDown(e, rowIdx, stage, mode);
+                          handleBarMouseDown(e, rowIdx, stage, "move");
                         }}
                       >
                         <span className="px-1 text-[9px] font-medium text-gray-700 truncate pointer-events-none">
                           {stage.name}
                         </span>
+                        {/* Left resize handle */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: 0,
+                            top: 0,
+                            width: "8px",
+                            height: "100%",
+                            cursor: "ew-resize",
+                            borderRadius: "4px 0 0 4px",
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleBarMouseDown(e, rowIdx, stage, "resizeL");
+                          }}
+                        />
+                        {/* Right resize handle */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            right: 0,
+                            top: 0,
+                            width: "8px",
+                            height: "100%",
+                            cursor: "ew-resize",
+                            borderRadius: "0 4px 4px 0",
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleBarMouseDown(e, rowIdx, stage, "resizeR");
+                          }}
+                        />
                       </div>
                     </div>
                   );
@@ -616,7 +637,6 @@ export default function GanttChart({
                   >
                     {dates.map((d) => {
                       const key = toDateKey(d);
-                      const val = resourceDays[m.id]?.[key] || 0;
                       const onHol = isOnHoliday(m.id, key);
                       if (onHol) {
                         return (
@@ -640,6 +660,37 @@ export default function GanttChart({
                           </div>
                         );
                       }
+
+                      // Check if this date is within any stage range for any project this member is on
+                      let isInStageRange = false;
+                      let matchingProjectId = "";
+                      let matchingStageId = "";
+                      for (const proj of projects.filter((p) => !p.archived)) {
+                        if (
+                          !(proj.teamMembers || []).some((tm) => tm.id === m.id)
+                        )
+                          continue;
+                        for (const stage of stages.filter(
+                          (s) => s.projectId === proj.id,
+                        )) {
+                          if (!stage.startDate || !stage.endDate) continue;
+                          if (
+                            key >= stage.startDate.substring(0, 10) &&
+                            key <= stage.endDate.substring(0, 10)
+                          ) {
+                            isInStageRange = true;
+                            matchingProjectId = proj.id;
+                            matchingStageId = stage.id;
+                            break;
+                          }
+                        }
+                        if (isInStageRange) break;
+                      }
+
+                      // Read value using composite key format matching ResourcePlanningGrid
+                      const compositeKey = `${matchingProjectId}:${matchingStageId}:${m.id}:${key}`;
+                      const val = resourceDays[compositeKey] || 0;
+
                       return (
                         <div
                           key={key}
@@ -648,34 +699,39 @@ export default function GanttChart({
                             width: dayWidth,
                             height: ROW_H,
                             borderColor: "#e5e7eb",
-                            backgroundColor: getWorkloadColor(val),
+                            backgroundColor: isInStageRange
+                              ? getWorkloadColor(val)
+                              : "#f3f4f6",
                             flexShrink: 0,
                           }}
                         >
-                          {val > 0 && dayWidth >= 20 && (
+                          {isInStageRange && dayWidth >= 20 && (
                             <input
                               data-ocid="gantt.resource.input"
                               type="number"
                               min={0}
                               max={2}
                               step={0.5}
-                              value={val}
+                              value={val || ""}
                               onChange={(e) => {
                                 const newVal =
                                   Number.parseFloat(e.target.value) || 0;
-                                const updated = {
-                                  ...resourceDays,
-                                  [m.id]: {
-                                    ...(resourceDays[m.id] || {}),
-                                    [key]: newVal,
-                                  },
-                                };
-                                setResourceDays(updated);
-                                localStorage.setItem(
-                                  "orca_resource_days",
-                                  JSON.stringify(updated),
-                                );
-                                triggerCloudSync();
+                                try {
+                                  const raw =
+                                    localStorage.getItem("orca_resource_days");
+                                  const data = raw ? JSON.parse(raw) : {};
+                                  if (newVal <= 0) {
+                                    delete data[compositeKey];
+                                  } else {
+                                    data[compositeKey] = newVal;
+                                  }
+                                  localStorage.setItem(
+                                    "orca_resource_days",
+                                    JSON.stringify(data),
+                                  );
+                                  setResourceDays(data);
+                                  triggerCloudSync();
+                                } catch {}
                               }}
                               className="w-full text-center text-[9px] bg-transparent border-0 focus:outline-none p-0"
                             />

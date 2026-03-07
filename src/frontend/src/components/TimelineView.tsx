@@ -12,6 +12,8 @@ import {
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import ResourcePlanningGrid from "./ResourcePlanningGrid";
+import EditProjectModal from "./modals/EditProjectModal";
+import ProjectMembersModal from "./modals/ProjectMembersModal";
 import StageModal from "./modals/StageModal";
 
 interface TimelineViewProps {
@@ -40,14 +42,16 @@ export default function TimelineView({
   onToggleFocus,
   onUpdateStage,
   onCreateStage,
-  onDeleteProject: _onDeleteProject,
-  onUpdateProject: _onUpdateProject,
-  onArchiveProject: _onArchiveProject,
+  onDeleteProject,
+  onUpdateProject,
+  onArchiveProject,
   onCreateProject: _onCreateProject,
 }: TimelineViewProps) {
   const [editingStage, setEditingStage] = useState<Stage | null>(null);
   const [showStageModal, setShowStageModal] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
+  const [membersProjectId, setMembersProjectId] = useState<string | null>(null);
+  const [editProjectId, setEditProjectId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
@@ -214,10 +218,13 @@ export default function TimelineView({
                           </span>
                         )}
                       </div>
-                      {/* Icon bar — exact same order as Board's ProjectCard */}
+                      {/* Icon bar — matching Board ProjectCard functionality */}
                       <div className="flex items-center justify-end gap-[15px]">
                         <button
                           type="button"
+                          onClick={() =>
+                            alert("Files feature — coming in Phase 2")
+                          }
                           style={{ width: "14px", height: "14px" }}
                           title="Files"
                         >
@@ -225,6 +232,9 @@ export default function TimelineView({
                         </button>
                         <button
                           type="button"
+                          onClick={() =>
+                            alert("Admin Files feature — coming in Phase 2")
+                          }
                           style={{ width: "14px", height: "14px" }}
                           title="Admin Files"
                         >
@@ -232,6 +242,7 @@ export default function TimelineView({
                         </button>
                         <button
                           type="button"
+                          onClick={() => setMembersProjectId(project.id)}
                           style={{ width: "14px", height: "14px" }}
                           title="Team"
                         >
@@ -239,6 +250,7 @@ export default function TimelineView({
                         </button>
                         <button
                           type="button"
+                          onClick={() => alert("Project Info — coming soon")}
                           style={{ width: "14px", height: "14px" }}
                           title="Info"
                         >
@@ -272,6 +284,7 @@ export default function TimelineView({
                         </button>
                         <button
                           type="button"
+                          onClick={() => setEditProjectId(project.id)}
                           style={{ width: "14px", height: "14px" }}
                           title="Menu"
                         >
@@ -343,12 +356,7 @@ export default function TimelineView({
         <div
           ref={scrollContainerRef}
           className="absolute inset-0 overflow-auto"
-          style={{
-            right:
-              focusedProjectId && focusedProject?.teamMembers?.length
-                ? `${150 + focusedProject.teamMembers.length * 60}px`
-                : "150px",
-          }}
+          style={{ right: "150px" }}
           onScroll={handleScroll}
         >
           <div
@@ -425,6 +433,74 @@ export default function TimelineView({
                             handleStageClick(stage);
                         }}
                       >
+                        {/* Top drag handle — resize startDate */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: "6px",
+                            cursor: "ns-resize",
+                            borderRadius: "6px 6px 0 0",
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            const startY = e.clientY;
+                            const origDate = stage.startDate!;
+                            const onMove = (ev: MouseEvent) => {
+                              const dy = ev.clientY - startY;
+                              const deltaDays = Math.round(dy / DAY_HEIGHT);
+                              const d = new Date(origDate);
+                              d.setDate(d.getDate() + deltaDays);
+                              const newKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                              onUpdateStage(stage.id, { startDate: newKey });
+                            };
+                            const onUp = () => {
+                              window.removeEventListener("mousemove", onMove);
+                              window.removeEventListener("mouseup", onUp);
+                            };
+                            window.addEventListener("mousemove", onMove);
+                            window.addEventListener("mouseup", onUp);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
+                        {/* Bottom drag handle — resize endDate */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: "6px",
+                            cursor: "ns-resize",
+                            borderRadius: "0 0 6px 6px",
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            const startY = e.clientY;
+                            const origDate = stage.endDate!;
+                            const onMove = (ev: MouseEvent) => {
+                              const dy = ev.clientY - startY;
+                              const deltaDays = Math.round(dy / DAY_HEIGHT);
+                              const d = new Date(origDate);
+                              d.setDate(d.getDate() + deltaDays);
+                              const newKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                              onUpdateStage(stage.id, { endDate: newKey });
+                            };
+                            const onUp = () => {
+                              window.removeEventListener("mousemove", onMove);
+                              window.removeEventListener("mouseup", onUp);
+                            };
+                            window.addEventListener("mousemove", onMove);
+                            window.addEventListener("mouseup", onUp);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
                         <div className="font-semibold text-sm text-gray-800 mb-1">
                           {stage.name}
                         </div>
@@ -588,6 +664,49 @@ export default function TimelineView({
         }}
         onDelete={handleDeleteStage}
       />
+
+      {/* Project Members Modal */}
+      {membersProjectId &&
+        (() => {
+          const proj = projects.find((p) => p.id === membersProjectId);
+          if (!proj) return null;
+          return (
+            <ProjectMembersModal
+              isOpen={true}
+              project={proj}
+              onClose={() => setMembersProjectId(null)}
+              onUpdateProject={(updates: Partial<Project>) => {
+                onUpdateProject(proj.id, updates);
+              }}
+            />
+          );
+        })()}
+
+      {/* Edit Project Modal */}
+      {editProjectId &&
+        (() => {
+          const proj = projects.find((p) => p.id === editProjectId);
+          if (!proj) return null;
+          return (
+            <EditProjectModal
+              isOpen={true}
+              project={proj}
+              onClose={() => setEditProjectId(null)}
+              onSave={(updates: Partial<Project>) => {
+                onUpdateProject(proj.id, updates);
+                setEditProjectId(null);
+              }}
+              onDelete={() => {
+                onDeleteProject(proj.id);
+                setEditProjectId(null);
+              }}
+              onArchive={() => {
+                onArchiveProject(proj.id, !proj.archived);
+                setEditProjectId(null);
+              }}
+            />
+          );
+        })()}
     </div>
   );
 }
