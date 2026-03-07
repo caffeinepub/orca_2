@@ -16,15 +16,12 @@ export default function ResourcePlanningGrid({
 }: ResourcePlanningGridProps) {
   const [resourceData, setResourceData] = useState<Record<string, number>>({});
   const [mounted, setMounted] = useState(false);
-
   const storageKey = "orca_resource_days";
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        setResourceData(JSON.parse(stored));
-      }
+      if (stored) setResourceData(JSON.parse(stored));
     } catch (error) {
       console.error("Failed to load resource data:", error);
     }
@@ -36,41 +33,35 @@ export default function ResourcePlanningGrid({
   }, []);
 
   const teamMembers: TeamMember[] = project.teamMembers || [];
+  const COL_W = 60;
 
-  const toDateKey = (d: Date): string => {
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  };
+  const toDateKey = (d: Date): string =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: mounted is intentional to force re-render after browser compositing
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mounted forces re-render after compositing
   const { validDates, dateToStageId } = useMemo(() => {
     const valid = new Set<string>();
     const stageMap = new Map<string, string>();
 
-    const fmt = (d: Date): string =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
     for (const stage of stages) {
       if (!stage.startDate || !stage.endDate) continue;
-
-      const startStr = stage.startDate.substring(0, 10);
-      const endStr = stage.endDate.substring(0, 10);
-
-      const [sy, sm, sd] = startStr.split("-").map(Number);
-      const [ey, em, ed] = endStr.split("-").map(Number);
-
+      const [sy, sm, sd] = stage.startDate
+        .substring(0, 10)
+        .split("-")
+        .map(Number);
+      const [ey, em, ed] = stage.endDate
+        .substring(0, 10)
+        .split("-")
+        .map(Number);
       const cursor = new Date(sy, sm - 1, sd);
       const endDate = new Date(ey, em - 1, ed);
-
       while (cursor <= endDate) {
-        const key = fmt(cursor);
+        const key = toDateKey(cursor);
         valid.add(key);
-        if (!stageMap.has(key)) {
-          stageMap.set(key, stage.id);
-        }
+        if (!stageMap.has(key)) stageMap.set(key, stage.id);
         cursor.setDate(cursor.getDate() + 1);
       }
     }
-
     return { validDates: valid, dateToStageId: stageMap };
   }, [stages, mounted]);
 
@@ -90,14 +81,12 @@ export default function ResourcePlanningGrid({
   ) => {
     const key = `${project.id}:${stageId}:${memberId}:${dateKey}`;
     const num = Number.parseFloat(value);
-
     const newData = { ...resourceData };
     if (Number.isNaN(num) || num <= 0 || value === "") {
       delete newData[key];
     } else {
       newData[key] = num;
     }
-
     localStorage.setItem(storageKey, JSON.stringify(newData));
     setResourceData(newData);
   };
@@ -114,71 +103,15 @@ export default function ResourcePlanningGrid({
   const getAggregate = (memberId: string, dateKey: string): number => {
     let total = 0;
     for (const [key, val] of Object.entries(resourceData)) {
-      if (key.endsWith(`:${memberId}:${dateKey}`)) {
-        total += val;
-      }
+      if (key.endsWith(`:${memberId}:${dateKey}`)) total += val;
     }
     return total;
   };
 
-  if (teamMembers.length === 0) {
-    return (
-      <div
-        style={{
-          width: "200px",
-          flexShrink: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "20px",
-          backgroundColor: "#f9fafb",
-          borderLeft: "1px solid #e5e7eb",
-        }}
-      >
-        <p className="text-sm text-gray-600 text-center">
-          Add team members to plan resources
-        </p>
-      </div>
-    );
-  }
-
-  const COL_W = 60;
+  if (teamMembers.length === 0) return null;
 
   return (
     <div style={{ width: `${teamMembers.length * COL_W}px`, flexShrink: 0 }}>
-      {/* Sticky header row with user initials - inside the grid so alignment is guaranteed */}
-      <div
-        style={{
-          display: "flex",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          backgroundColor: "white",
-          borderBottom: "1px solid #e5e7eb",
-          height: "40px",
-        }}
-      >
-        {teamMembers.map((member) => (
-          <div
-            key={member.id}
-            style={{
-              width: `${COL_W}px`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-              style={{ backgroundColor: member.avatarColor }}
-            >
-              {member.initials}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Grid rows */}
       {allDates.map((date) => {
         const dateKey = toDateKey(date);
         const isInRange = validDates.has(dateKey);
