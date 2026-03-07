@@ -297,35 +297,6 @@ export default function TimelineView({
                   </button>
                 </div>
               )}
-
-              {/* Resource grid header - inside scroll, order:99 to stay right */}
-              {focusedProjectId &&
-                focusedProject?.teamMembers &&
-                focusedProject.teamMembers.length > 0 && (
-                  <div
-                    className="flex-shrink-0 flex items-end pb-2 gap-0 border-l"
-                    style={{
-                      borderColor: "#e5e7eb",
-                      order: 99,
-                      marginLeft: "auto",
-                    }}
-                  >
-                    {focusedProject.teamMembers.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex flex-col items-center justify-center"
-                        style={{ width: "60px" }}
-                      >
-                        <div
-                          className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-                          style={{ backgroundColor: member.avatarColor }}
-                        >
-                          {member.initials}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
             </div>
           </div>
 
@@ -372,7 +343,12 @@ export default function TimelineView({
         <div
           ref={scrollContainerRef}
           className="absolute inset-0 overflow-auto"
-          style={{ right: "150px" }}
+          style={{
+            right:
+              focusedProjectId && focusedProject?.teamMembers?.length
+                ? `${150 + focusedProject.teamMembers.length * 60}px`
+                : "150px",
+          }}
           onScroll={handleScroll}
         >
           <div

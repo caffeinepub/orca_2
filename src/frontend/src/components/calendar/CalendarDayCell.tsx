@@ -51,15 +51,17 @@ export default function CalendarDayCell({
 
   return (
     <div
-      className={`border-b border-r p-1 overflow-hidden ${!inMonth ? "opacity-40" : ""}`}
+      className={`border-b border-r ${!inMonth ? "opacity-40" : ""}`}
       style={{
         minHeight: tall ? "140px" : "90px",
         backgroundColor: isT ? "#eff6ff" : isWE ? "#f9fafb" : "#ffffff",
         borderColor: "#e5e7eb",
+        overflow: "visible",
+        position: "relative",
       }}
     >
       <div
-        className={`text-xs font-medium mb-0.5 ${isT ? "text-blue-600 font-bold" : "text-gray-500"}`}
+        className={`text-xs font-medium mb-0.5 px-1 ${isT ? "text-blue-600 font-bold" : "text-gray-500"}`}
       >
         {date.getDate()}
       </div>
@@ -81,11 +83,13 @@ export default function CalendarDayCell({
                     : ev.isEnd
                       ? "0 4px 4px 0"
                       : "0",
-              marginLeft: ev.isStart ? "0" : "-4px",
-              marginRight: ev.isEnd ? "0" : "-4px",
+              marginLeft: ev.isStart ? "2px" : "-1px",
+              marginRight: ev.isEnd ? "2px" : "-1px",
               paddingLeft: ev.isStart ? "4px" : "2px",
               paddingRight: ev.isEnd ? "4px" : "2px",
               display: "block",
+              position: "relative",
+              zIndex: 1,
             }}
             title={`${ev.projectName} — ${ev.label}`}
           >

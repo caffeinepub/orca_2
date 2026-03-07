@@ -79,13 +79,39 @@ export default function App() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const lastSavedRef = useRef<string | null>(null);
+  const saveInProgressRef = useRef(false);
+
   useEffect(() => {
     scheduleCloudSave = (data: string) => {
+      // Skip if identical to last successful save
+      if (data === lastSavedRef.current) return;
+
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        if (actor) actor.saveAppState(data).catch(console.error);
-      }, 3000);
+        if (actor && !saveInProgressRef.current) {
+          saveInProgressRef.current = true;
+          actor
+            .saveAppState(data)
+            .then((result: unknown) => {
+              // Check for Candid { err } variant
+              const r = result as Record<string, unknown> | null;
+              if (r && "err" in r) {
+                console.error("saveAppState returned error:", r.err);
+              } else {
+                lastSavedRef.current = data;
+              }
+            })
+            .catch((e: unknown) => {
+              console.error("saveAppState failed:", e);
+            })
+            .finally(() => {
+              saveInProgressRef.current = false;
+            });
+        }
+      }, 1000);
     };
+
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -99,14 +125,34 @@ export default function App() {
     actor
       .loadAppState()
       .then((result: unknown) => {
-        const r = result as { "0"?: string } | string | null | undefined;
-        const cloudData =
-          typeof r === "object" && r !== null && "0" in r ? r["0"] : r;
-        if (
-          cloudData &&
-          typeof cloudData === "string" &&
-          cloudData.length > 2
-        ) {
+        // Handle Candid variant result: { ok: string } | { err: string }
+        // Also handle possible wrapped formats: { "0": string } or raw string
+        let cloudData: string | null = null;
+
+        if (result && typeof result === "object") {
+          const r = result as Record<string, unknown>;
+          if ("ok" in r && typeof r.ok === "string") {
+            // Standard Candid variant: { ok: "json_string" }
+            cloudData = r.ok;
+          } else if ("0" in r && typeof r["0"] === "string") {
+            // Indexed wrapper format: { "0": "json_string" }
+            cloudData = r["0"];
+          } else if (
+            "0" in r &&
+            typeof r["0"] === "object" &&
+            r["0"] !== null
+          ) {
+            // Nested: { "0": { ok: "json_string" } }
+            const inner = r["0"] as Record<string, unknown>;
+            if ("ok" in inner && typeof inner.ok === "string") {
+              cloudData = inner.ok;
+            }
+          }
+        } else if (typeof result === "string") {
+          cloudData = result;
+        }
+
+        if (cloudData && cloudData.length > 2) {
           loadFromCloud(cloudData);
         }
         setProjects(loadProjects());

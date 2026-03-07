@@ -19,7 +19,6 @@ export default function ResourcePlanningGrid({
 
   const storageKey = "orca_resource_days";
 
-  // Load resource data from localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem(storageKey);
@@ -31,7 +30,6 @@ export default function ResourcePlanningGrid({
     }
   }, []);
 
-  // Force re-render after mount to fix grey fill timing
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 10);
     return () => clearTimeout(timer);
@@ -39,12 +37,10 @@ export default function ResourcePlanningGrid({
 
   const teamMembers: TeamMember[] = project.teamMembers || [];
 
-  // Format a Date to YYYY-MM-DD string
   const toDateKey = (d: Date): string => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   };
 
-  // Pre-compute: which date strings are within ANY stage, and which stageId they belong to
   // biome-ignore lint/correctness/useExhaustiveDependencies: mounted is intentional to force re-render after browser compositing
   const { validDates, dateToStageId } = useMemo(() => {
     const valid = new Set<string>();
@@ -150,6 +146,39 @@ export default function ResourcePlanningGrid({
 
   return (
     <div style={{ width: `${teamMembers.length * COL_W}px`, flexShrink: 0 }}>
+      {/* Sticky header row with user initials - inside the grid so alignment is guaranteed */}
+      <div
+        style={{
+          display: "flex",
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          backgroundColor: "white",
+          borderBottom: "1px solid #e5e7eb",
+          height: "40px",
+        }}
+      >
+        {teamMembers.map((member) => (
+          <div
+            key={member.id}
+            style={{
+              width: `${COL_W}px`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
+              style={{ backgroundColor: member.avatarColor }}
+            >
+              {member.initials}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Grid rows */}
       {allDates.map((date) => {
         const dateKey = toDateKey(date);
         const isInRange = validDates.has(dateKey);

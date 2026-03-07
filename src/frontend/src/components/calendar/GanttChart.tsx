@@ -172,10 +172,15 @@ export default function GanttChart({
     }
   }, []);
 
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+
   const handleRightScroll = () => {
-    if (rightRef.current && headerRef.current && !isSyncingRef.current) {
+    if (rightRef.current && !isSyncingRef.current) {
       isSyncingRef.current = true;
-      headerRef.current.scrollLeft = rightRef.current.scrollLeft;
+      if (headerRef.current)
+        headerRef.current.scrollLeft = rightRef.current.scrollLeft;
+      if (leftPanelRef.current)
+        leftPanelRef.current.scrollTop = rightRef.current.scrollTop;
       isSyncingRef.current = false;
     }
   };
@@ -288,6 +293,7 @@ export default function GanttChart({
       <div className="flex-1 flex overflow-hidden">
         {/* Left panel */}
         <GanttLeftPanel
+          ref={leftPanelRef}
           rows={rows}
           expandedProjects={expandedProjects}
           expandedStages={expandedStages}
@@ -370,7 +376,9 @@ export default function GanttChart({
               style={{
                 width: totalWidth,
                 position: "relative",
-                minHeight: rows.length * ROW_H,
+                minHeight:
+                  rows.length * ROW_H +
+                  (allMembers.length > 0 ? 32 + allMembers.length * ROW_H : 0),
               }}
             >
               {/* Today line */}
