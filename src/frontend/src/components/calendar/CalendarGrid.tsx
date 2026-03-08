@@ -30,6 +30,17 @@ export default function CalendarGrid({
   );
   const [viewType, setViewType] = useState<"month" | "week">("month");
   const [hiddenProjects, setHiddenProjects] = useState<Set<string>>(new Set());
+  const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
+
+  const toggleType = (t: string) => {
+    setHiddenTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+  };
+
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -162,6 +173,42 @@ export default function CalendarGrid({
           ))}
       </div>
 
+      {/* Type toggles */}
+      <div className="shrink-0 px-4 py-1.5 border-b flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+          Show:
+        </span>
+        {(["stages", "tasks", "milestones", "holidays"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => toggleType(t)}
+            className={`px-2 py-0.5 rounded-full text-[10px] border transition-opacity ${hiddenTypes.has(t) ? "opacity-40 bg-transparent" : "opacity-100"}`}
+            style={{
+              borderColor:
+                t === "stages"
+                  ? "#93c5fd"
+                  : t === "tasks"
+                    ? "#d1d5db"
+                    : t === "milestones"
+                      ? "#fde68a"
+                      : "#fbbf24",
+              backgroundColor: hiddenTypes.has(t)
+                ? "transparent"
+                : t === "stages"
+                  ? "#dbeafe"
+                  : t === "tasks"
+                    ? "#f3f4f6"
+                    : t === "milestones"
+                      ? "#fef3c7"
+                      : "#fef3c7",
+            }}
+          >
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </button>
+        ))}
+      </div>
+
       {/* Weekday headers */}
       <div className="shrink-0 grid grid-cols-7 border-b">
         {WEEKDAYS.map((d) => (
@@ -183,6 +230,12 @@ export default function CalendarGrid({
             visibleTasks,
             projects,
           );
+          const filteredStages = hiddenTypes.has("stages") ? [] : stageEvents;
+          const filteredTasks = taskEvents.filter((t) => {
+            if (t.isMilestone && hiddenTypes.has("milestones")) return false;
+            if (!t.isMilestone && hiddenTypes.has("tasks")) return false;
+            return true;
+          });
           return (
             <CalendarDayCell
               key={toDateKey(date)}
@@ -190,9 +243,10 @@ export default function CalendarGrid({
               inMonth={inMonth}
               tall={viewType === "week"}
               today={today}
-              stageEvents={stageEvents}
-              taskEvents={taskEvents}
+              stageEvents={filteredStages}
+              taskEvents={filteredTasks}
               onStageClick={handleStageClick}
+              showHolidays={!hiddenTypes.has("holidays")}
             />
           );
         })}

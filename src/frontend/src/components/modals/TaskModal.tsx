@@ -25,6 +25,7 @@ interface TaskModalProps {
   stages?: Stage[];
   stage?: Stage;
   teamMembers?: TeamMember[];
+  allTasks?: Task[];
 }
 
 export default function TaskModal({
@@ -36,6 +37,7 @@ export default function TaskModal({
   stages,
   stage: _stage,
   teamMembers,
+  allTasks = [],
 }: TaskModalProps) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
@@ -54,6 +56,9 @@ export default function TaskModal({
     task.assignees || [],
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [dependencies, setDependencies] = useState<string[]>(
+    task.dependencies || [],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset all fields only when task.id changes (opening a different task)
   useEffect(() => {
@@ -67,6 +72,7 @@ export default function TaskModal({
     setCardColor(task.cardColor || null);
     setSelectedAssignees(task.assignees || []);
     setConfirmDelete(false);
+    setDependencies(task.dependencies || []);
   }, [task.id]);
 
   const selectedStage = stages?.find((s) => s.id === stageId);
@@ -83,6 +89,7 @@ export default function TaskModal({
       cardColor,
       assignees: selectedAssignees,
       completed: status === "done",
+      dependencies,
     });
   };
 
@@ -314,6 +321,50 @@ export default function TaskModal({
                 <span className="sr-only">Add item</span>
               </button>
             </div>
+          </div>
+          <div>
+            <p className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+              Dependencies
+            </p>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {dependencies.map((depId) => {
+                const depTask = allTasks.find((t) => t.id === depId);
+                return (
+                  <span
+                    key={depId}
+                    className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded text-xs"
+                  >
+                    {depTask?.title || depId}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setDependencies((d) => d.filter((x) => x !== depId))
+                      }
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+            <select
+              value=""
+              onChange={(e) => {
+                if (e.target.value)
+                  setDependencies((d) => [...d, e.target.value]);
+              }}
+              className="w-full border rounded px-2 py-1.5 text-sm"
+            >
+              <option value="">Add dependency...</option>
+              {allTasks
+                .filter((t) => t.id !== task.id && !dependencies.includes(t.id))
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.title}
+                  </option>
+                ))}
+            </select>
           </div>
           <div>
             <label

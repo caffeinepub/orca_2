@@ -32,6 +32,7 @@ interface Props {
   stageEvents: StageEvent[];
   taskEvents: TaskEvent[];
   onStageClick: (stage: Stage) => void;
+  showHolidays?: boolean;
 }
 
 export default function CalendarDayCell({
@@ -42,6 +43,7 @@ export default function CalendarDayCell({
   stageEvents,
   taskEvents,
   onStageClick,
+  showHolidays = true,
 }: Props) {
   const isT = isSameDay(date, today);
   const isWE = date.getDay() === 0 || date.getDay() === 6;
@@ -108,15 +110,16 @@ export default function CalendarDayCell({
               {ev.label}
             </div>
           ))}
-        {getHolidaysOnDate(date).map((h) => (
-          <div
-            key={h.id}
-            className="text-[10px] px-1 py-0.5 rounded truncate bg-amber-100 text-amber-800"
-            title={`${h.memberName} on holiday`}
-          >
-            🌴 {h.memberName}
-          </div>
-        ))}
+        {showHolidays &&
+          getHolidaysOnDate(date).map((h) => (
+            <div
+              key={h.id}
+              className="text-[10px] px-1 py-0.5 rounded truncate bg-amber-100 text-amber-800"
+              title={`${h.memberName} on holiday`}
+            >
+              🌴 {h.memberName}
+            </div>
+          ))}
         {overflow > 0 && (
           <div className="text-[9px] text-gray-400 px-1">+{overflow} more</div>
         )}

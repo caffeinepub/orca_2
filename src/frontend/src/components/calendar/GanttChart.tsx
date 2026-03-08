@@ -42,6 +42,7 @@ export default function GanttChart({
   const [expandedStages, setExpandedStages] = useState<Set<string>>(
     new Set(stages.map((s) => s.id)),
   );
+  const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
   const [resourceDays, setResourceDays] = useState<Record<string, number>>({});
 
   const dates = getGanttDateRange(today);
@@ -93,16 +94,21 @@ export default function GanttChart({
     });
     if (!expandedProjects.has(proj.id)) continue;
     for (const stage of stages.filter((s) => s.projectId === proj.id)) {
-      rows.push({
-        type: "stage",
-        id: stage.id,
-        label: stage.name,
-        color: stage.color,
-        indent: 1,
-        projectId: proj.id,
-      });
+      if (!hiddenTypes.has("stages")) {
+        rows.push({
+          type: "stage",
+          id: stage.id,
+          label: stage.name,
+          color: stage.color,
+          indent: 1,
+          projectId: proj.id,
+        });
+      }
       if (!expandedStages.has(stage.id)) continue;
       for (const task of tasks.filter((t) => t.stageId === stage.id)) {
+        const isMilestone = task.isMilestone || task.milestone;
+        if (isMilestone && hiddenTypes.has("milestones")) continue;
+        if (!isMilestone && hiddenTypes.has("tasks")) continue;
         rows.push({
           type: "task",
           id: task.id,
@@ -116,7 +122,7 @@ export default function GanttChart({
 
   // Add holiday rows
   const approvedHolidays = getApprovedHolidays();
-  if (approvedHolidays.length > 0) {
+  if (approvedHolidays.length > 0 && !hiddenTypes.has("holidays")) {
     rows.push({
       type: "header",
       id: "holidays-header",
@@ -266,7 +272,7 @@ export default function GanttChart({
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Zoom controls */}
-      <div className="shrink-0 px-4 py-1.5 border-b bg-white flex items-center gap-2">
+      <div className="shrink-0 px-4 py-1.5 border-b bg-white flex items-center gap-2 flex-wrap">
         <span className="text-xs text-gray-500">Zoom:</span>
         <button
           type="button"
@@ -287,6 +293,43 @@ export default function GanttChart({
         >
           <ZoomIn className="w-3.5 h-3.5" />
         </button>
+        <div className="w-px h-4 bg-gray-200 mx-2" />
+        <span className="text-xs text-gray-500">Show:</span>
+        {(["stages", "tasks", "milestones", "holidays"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() =>
+              setHiddenTypes((prev) => {
+                const n = new Set(prev);
+                n.has(t) ? n.delete(t) : n.add(t);
+                return n;
+              })
+            }
+            className={`px-2 py-0.5 rounded-full text-[10px] border transition-opacity ${hiddenTypes.has(t) ? "opacity-40" : "opacity-100"}`}
+            style={{
+              borderColor:
+                t === "stages"
+                  ? "#93c5fd"
+                  : t === "tasks"
+                    ? "#d1d5db"
+                    : t === "milestones"
+                      ? "#fde68a"
+                      : "#fbbf24",
+              backgroundColor: hiddenTypes.has(t)
+                ? "transparent"
+                : t === "stages"
+                  ? "#dbeafe"
+                  : t === "tasks"
+                    ? "#f3f4f6"
+                    : t === "milestones"
+                      ? "#fef3c7"
+                      : "#fef3c7",
+            }}
+          >
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </button>
+        ))}
       </div>
 
       <div className="flex-1 flex overflow-hidden">
@@ -620,6 +663,56 @@ export default function GanttChart({
                   />
                 );
               })}
+
+              {/* Dependency arrows */}
+              {/* biome-ignore lint/a11y/noSvgWithoutTitle: decorative dependency lines */}
+              <svg
+                role="presentation"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: totalWidth,
+                  height: rows.length * ROW_H,
+                  pointerEvents: "none",
+                  zIndex: 5,
+                }}
+              >
+                {rows.map((row, rowIdx) => {
+                  if (row.type !== "task") return null;
+                  const task = tasks.find((t) => t.id === row.id);
+                  if (!task?.dependencies?.length || !task.dueDate) return null;
+                  const toIdx = dateIndex(new Date(task.dueDate));
+                  if (toIdx < 0) return null;
+                  const toX = toIdx * dayWidth + dayWidth / 2;
+                  const toY = rowIdx * ROW_H + ROW_H / 2;
+                  return task.dependencies.map((depId) => {
+                    const depRowIdx = rows.findIndex((r) => r.id === depId);
+                    const depTask = tasks.find((t) => t.id === depId);
+                    if (depRowIdx < 0 || !depTask?.dueDate) return null;
+                    const fromIdx = dateIndex(new Date(depTask.dueDate));
+                    if (fromIdx < 0) return null;
+                    const fromX = fromIdx * dayWidth + dayWidth / 2;
+                    const fromY = depRowIdx * ROW_H + ROW_H / 2;
+                    const midX = fromX + (toX - fromX) / 2;
+                    return (
+                      <g key={`${depId}-${row.id}`}>
+                        <path
+                          d={`M ${fromX} ${fromY} C ${midX} ${fromY}, ${midX} ${toY}, ${toX} ${toY}`}
+                          fill="none"
+                          stroke="#9ca3af"
+                          strokeWidth="1.5"
+                          strokeDasharray="4 2"
+                        />
+                        <polygon
+                          points={`${toX},${toY} ${toX - 5},${toY - 3} ${toX - 5},${toY + 3}`}
+                          fill="#9ca3af"
+                        />
+                      </g>
+                    );
+                  });
+                })}
+              </svg>
 
               {/* Resource planning rows */}
               {allMembers.map((m, mi) => {

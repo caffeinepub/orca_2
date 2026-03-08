@@ -389,6 +389,7 @@ export default function ProjectCard({
                 onDeleteTask={onDeleteTask}
                 allStages={stages}
                 teamMembers={project.teamMembers}
+                allTasks={tasks}
               />
             </div>
           ))}

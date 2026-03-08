@@ -16,6 +16,7 @@ interface TaskCardProps {
   stages?: Stage[];
   teamMembers?: TeamMember[];
   stage?: Stage;
+  allTasks?: Task[];
 }
 
 export default function TaskCard({
@@ -25,6 +26,7 @@ export default function TaskCard({
   stages,
   teamMembers,
   stage,
+  allTasks,
 }: TaskCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);
@@ -235,6 +237,7 @@ export default function TaskCard({
         stages={stages || []}
         stage={stage}
         teamMembers={teamMembers}
+        allTasks={allTasks}
         onSave={(updates) => {
           onUpdate(updates);
           setShowModal(false);

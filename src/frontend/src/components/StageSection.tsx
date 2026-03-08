@@ -15,6 +15,7 @@ interface StageSectionProps {
   onDeleteTask: (taskId: string) => void;
   allStages?: Stage[];
   teamMembers?: TeamMember[];
+  allTasks?: Task[];
 }
 
 export default function StageSection({
@@ -28,6 +29,7 @@ export default function StageSection({
   onDeleteTask,
   allStages,
   teamMembers,
+  allTasks,
 }: StageSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -263,6 +265,7 @@ export default function StageSection({
                   stages={allStages}
                   teamMembers={teamMembers}
                   stage={stage}
+                  allTasks={allTasks}
                 />
               </div>
             ))}

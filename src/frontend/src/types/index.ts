@@ -93,6 +93,7 @@ export interface Task {
   milestone?: boolean;
   completed?: boolean;
   cardColor?: string | null;
+  dependencies?: string[];
 }
 
 export const PROJECT_COLORS = [
