@@ -58,7 +58,7 @@ export default function TimelineHeader({
                 key={project.id}
                 className="shrink-0 rounded-lg shadow-md overflow-hidden"
                 style={{
-                  width: focusedProjectId ? "600px" : "384px",
+                  width: "384px",
                   backgroundColor: project.color,
                 }}
               >

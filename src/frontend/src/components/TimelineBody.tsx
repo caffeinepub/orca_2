@@ -32,7 +32,7 @@ export default function TimelineBody({
           <div
             key={project.id}
             style={{
-              width: focusedProjectId ? "600px" : "384px",
+              width: "384px",
               flexShrink: 0,
               marginLeft: projectIdx === 0 ? "16px" : "0",
               marginRight: focusedProjectId ? "0px" : "16px",
