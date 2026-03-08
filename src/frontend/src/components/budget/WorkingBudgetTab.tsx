@@ -679,18 +679,18 @@ export default function WorkingBudgetTab({
             >
               <div className="flex items-center gap-2">
                 {isCollapsed ? (
-                  <ChevronRight className="w-4 h-4 text-white" />
+                  <ChevronRight className="w-4 h-4 text-black" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-white" />
+                  <ChevronDown className="w-4 h-4 text-black" />
                 )}
-                <span className="font-semibold text-sm text-white drop-shadow-sm">
+                <span className="font-semibold text-sm text-black drop-shadow-sm">
                   {stage.name}
                 </span>
               </div>
-              <div className="flex gap-4 text-xs text-white/90">
+              <div className="flex gap-4 text-xs text-black/80">
                 <span>Labour: {formatCurrency(stageTotals.labourCost)}</span>
                 <span>Other: {formatCurrency(stageTotals.otherCost)}</span>
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-black">
                   Total: {formatCurrency(stageTotals.total)}
                 </span>
               </div>
