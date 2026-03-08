@@ -661,32 +661,36 @@ export default function WorkingBudgetTab({
         const stageInvs = getStageInvoices(stage.id);
         const stageClientTotal = stageTotals.total;
 
+        const stageColor = stage.color || "#e5e7eb";
+
         return (
           <div
             key={stage.id}
-            className="border rounded-lg bg-white overflow-hidden"
+            className="rounded-lg bg-white overflow-hidden"
+            style={{ border: `2px solid ${stageColor}` }}
           >
             {/* Stage header */}
             <button
               type="button"
               onClick={() => toggleStageCollapse(stage.id)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center justify-between px-4 py-3 transition-colors"
+              style={{ backgroundColor: stageColor }}
               data-ocid={`budget.stage_${stage.id}.toggle`}
             >
               <div className="flex items-center gap-2">
                 {isCollapsed ? (
-                  <ChevronRight className="w-4 h-4 text-gray-500" />
+                  <ChevronRight className="w-4 h-4 text-white" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                  <ChevronDown className="w-4 h-4 text-white" />
                 )}
-                <span className="font-semibold text-sm text-gray-800">
+                <span className="font-semibold text-sm text-white drop-shadow-sm">
                   {stage.name}
                 </span>
               </div>
-              <div className="flex gap-4 text-xs text-gray-500">
+              <div className="flex gap-4 text-xs text-white/90">
                 <span>Labour: {formatCurrency(stageTotals.labourCost)}</span>
                 <span>Other: {formatCurrency(stageTotals.otherCost)}</span>
-                <span className="font-semibold text-gray-700">
+                <span className="font-semibold text-white">
                   Total: {formatCurrency(stageTotals.total)}
                 </span>
               </div>
