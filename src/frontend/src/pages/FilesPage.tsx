@@ -7,38 +7,54 @@ import {
   createFolder,
   deleteFile,
   deleteFolder,
-  ensureProjectFolders,
+  ensureAllFolders,
+  getVisibleFolders,
   loadFiles,
   uploadFile,
 } from "@/utils/filesStorage";
-import { FolderPlus, Grid3X3, List, Upload } from "lucide-react";
+import { Columns3, FolderPlus, Grid3X3, List, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface FilesPageProps {
   projects: Project[];
   currentUserId: string;
+  currentUserName?: string;
+  currentUserRole?: string;
   targetFolderId?: string | null;
 }
 
 export default function FilesPage({
   projects,
   currentUserId,
+  currentUserName = "",
+  currentUserRole = "Standard",
   targetFolderId,
 }: FilesPageProps) {
   const [folders, setFolders] = useState<FileFolder[]>([]);
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "columns">("list");
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
   const refresh = useCallback(() => {
-    const f = ensureProjectFolders(projects, currentUserId);
-    setFolders(f);
+    const allFolders = ensureAllFolders(
+      projects,
+      currentUserId,
+      currentUserName,
+      currentUserRole,
+    );
+    const visible = getVisibleFolders(
+      allFolders,
+      projects,
+      currentUserId,
+      currentUserRole,
+    );
+    setFolders(visible);
     setFiles(loadFiles());
-  }, [projects, currentUserId]);
+  }, [projects, currentUserId, currentUserName, currentUserRole]);
 
   useEffect(() => {
     refresh();
@@ -140,6 +156,15 @@ export default function FilesPage({
           >
             <Grid3X3 className="w-4 h-4" />
           </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("columns")}
+            className={`p-1.5 rounded ${viewMode === "columns" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+            title="Columns view"
+            data-ocid="files.columns_view.toggle"
+          >
+            <Columns3 className="w-4 h-4" />
+          </button>
 
           <div className="w-px h-5 bg-gray-200 mx-1" />
 
@@ -229,6 +254,7 @@ export default function FilesPage({
         onOpenFolder={setCurrentFolderId}
         onDeleteFolder={handleDeleteFolder}
         onDeleteFile={handleDeleteFile}
+        onRefresh={refresh}
       />
     </div>
   );

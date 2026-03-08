@@ -6,6 +6,7 @@ import {
   loadHolidays,
   saveHolidays,
 } from "@/utils/holidays";
+import { hasPermission } from "@/utils/permissions";
 import { triggerCloudSync } from "@/utils/storage";
 import { Calendar, Check, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -42,7 +43,8 @@ export default function HolidaysTab({
   const [declineReason, setDeclineReason] = useState("");
 
   const isAdmin =
-    currentUserRole === "Super Admin" || currentUserRole === "Admin";
+    currentUserRole === "Super Admin" ||
+    hasPermission(currentUserRole, "view_all_holidays");
   useEffect(() => {
     saveHolidays(holidays);
     triggerCloudSync();

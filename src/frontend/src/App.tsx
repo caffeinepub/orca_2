@@ -19,8 +19,8 @@ import { ProfileSetupPage } from "./pages/ProfileSetupPage";
 import { SalesPage } from "./pages/SalesPage";
 import SettingsPage from "./pages/SettingsPage";
 import TeamPage from "./pages/TeamPage";
-import type { Project, Stage, Task } from "./types";
-import { ensureProjectFolders } from "./utils/filesStorage";
+import type { ChecklistItem, Project, Stage, Task } from "./types";
+import { ensureAllFolders } from "./utils/filesStorage";
 import {
   generateId,
   loadFromCloud,
@@ -32,6 +32,7 @@ import {
   saveTasks,
   setCurrentPrincipal,
 } from "./utils/storage";
+import { loadTemplates } from "./utils/templateStorage";
 
 type Page =
   | "board"
@@ -241,7 +242,12 @@ export default function App() {
     projectId: string,
     folderType: "project" | "project_admin",
   ) => {
-    const folders = ensureProjectFolders(projects, currentPrincipal);
+    const folders = ensureAllFolders(
+      projects,
+      currentPrincipal,
+      profileData?.fullName || "",
+      "Super Admin",
+    );
     const target = folders.find(
       (f) => f.projectId === projectId && f.type === folderType,
     );
@@ -251,7 +257,11 @@ export default function App() {
     }
   };
 
-  const handleCreateProject = (name: string, color: string) => {
+  const handleCreateProject = (
+    name: string,
+    color: string,
+    templateId?: string,
+  ) => {
     const maxOrder = projects.reduce(
       (max, p) => Math.max(max, p.order ?? -1),
       -1,
@@ -267,6 +277,58 @@ export default function App() {
     const updated = [...projects, newProject];
     setProjects(updated);
     saveProjects(updated);
+
+    // Apply template if selected
+    if (templateId) {
+      const templates = loadTemplates();
+      const tmpl = templates.find((t) => t.id === templateId);
+      if (tmpl?.stages) {
+        const newStages = tmpl.stages.map((ts, i) => ({
+          id: generateId(),
+          projectId: newProject.id,
+          name: ts.name,
+          order: i,
+          color: ts.color,
+          startDate: tmpl.includeStageDates ? ts.startDate : undefined,
+          endDate: tmpl.includeStageDates ? ts.endDate : undefined,
+        }));
+        const updatedStages = [...stages, ...newStages];
+        setStages(updatedStages);
+        saveStages(updatedStages);
+
+        // Apply tasks if template has them
+        try {
+          const taskData = localStorage.getItem(
+            `orca_template_tasks_${templateId}`,
+          );
+          if (taskData && tmpl.includeTasks) {
+            const templateTasks = JSON.parse(taskData) as {
+              title: string;
+              description?: string;
+              stageIndex: number;
+              order: number;
+              milestone?: boolean;
+              dueDate?: string;
+              checklist?: ChecklistItem[];
+            }[];
+            const newTasks = templateTasks.map((tt) => ({
+              id: generateId(),
+              stageId: newStages[tt.stageIndex]?.id || newStages[0]?.id,
+              title: tt.title,
+              description: tt.description,
+              order: tt.order,
+              status: "todo" as const,
+              milestone: tt.milestone,
+              dueDate: tt.dueDate,
+              checklist: tt.checklist,
+            }));
+            const updatedTasks = [...tasks, ...newTasks];
+            setTasks(updatedTasks);
+            saveTasks(updatedTasks);
+          }
+        } catch {}
+      }
+    }
   };
 
   const handleDeleteProject = (id: string) => {
@@ -445,6 +507,8 @@ export default function App() {
           <FilesPage
             projects={projects}
             currentUserId={currentPrincipal}
+            currentUserName={profileData?.fullName || ""}
+            currentUserRole="Super Admin"
             targetFolderId={filesTargetFolderId}
           />
         );

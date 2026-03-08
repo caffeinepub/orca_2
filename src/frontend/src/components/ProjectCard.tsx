@@ -1,4 +1,5 @@
 import type { Project, Stage, Task } from "@/types";
+import { ensureAllFolders } from "@/utils/filesStorage";
 import {
   Eye,
   EyeOff,
@@ -11,6 +12,8 @@ import {
 import { useEffect, useRef, useState } from "react";
 import StageSection from "./StageSection";
 import EditProjectModal from "./modals/EditProjectModal";
+import FolderPopupModal from "./modals/FolderPopupModal";
+import ProjectInfoModal from "./modals/ProjectInfoModal";
 import ProjectMembersModal from "./modals/ProjectMembersModal";
 
 interface ProjectCardProps {
@@ -39,7 +42,6 @@ export default function ProjectCard({
   isFocused,
   showArchived,
   onToggleFocus,
-  onNavigateToFiles,
   onCreateStage,
   onDeleteProject,
   onUpdateProject,
@@ -52,6 +54,10 @@ export default function ProjectCard({
 }: ProjectCardProps) {
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showFolderPopup, setShowFolderPopup] = useState<
+    "project" | "project_admin" | null
+  >(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(project.name);
   const [isDragging, setIsDragging] = useState(false);
@@ -242,7 +248,7 @@ export default function ProjectCard({
             {/* 1. Files (grey) */}
             <button
               type="button"
-              onClick={() => onNavigateToFiles?.("project")}
+              onClick={() => setShowFolderPopup("project")}
               style={{ width: "14px", height: "14px" }}
               title="Files"
               data-ocid="project.files.button"
@@ -255,7 +261,7 @@ export default function ProjectCard({
             {/* 2. Admin Files (yellow) */}
             <button
               type="button"
-              onClick={() => onNavigateToFiles?.("project_admin")}
+              onClick={() => setShowFolderPopup("project_admin")}
               style={{ width: "14px", height: "14px" }}
               title="Admin Files"
               data-ocid="project.admin_files.button"
@@ -281,7 +287,7 @@ export default function ProjectCard({
             {/* 4. Info */}
             <button
               type="button"
-              onClick={() => alert("Project Info — coming soon")}
+              onClick={() => setShowInfoModal(true)}
               style={{ width: "14px", height: "14px" }}
               title="Info"
               data-ocid="project.info.button"
@@ -420,6 +426,8 @@ export default function ProjectCard({
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         project={project}
+        stages={stages}
+        tasks={tasks}
         onSave={(updates) => {
           if (updates.name !== undefined || updates.color !== undefined)
             onUpdateProject(
@@ -437,6 +445,34 @@ export default function ProjectCard({
           setShowEditModal(false);
         }}
       />
+      <ProjectInfoModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+        project={project}
+        stages={stages}
+        tasks={tasks}
+      />
+      {showFolderPopup &&
+        (() => {
+          const folders = ensureAllFolders([project], "", "", "Super Admin");
+          const target = folders.find(
+            (f) => f.projectId === project.id && f.type === showFolderPopup,
+          );
+          if (!target) return null;
+          return (
+            <FolderPopupModal
+              isOpen={true}
+              onClose={() => setShowFolderPopup(null)}
+              rootFolderId={target.id}
+              folderName={
+                showFolderPopup === "project_admin"
+                  ? `${project.name} (Admin)`
+                  : project.name
+              }
+              currentUserId=""
+            />
+          );
+        })()}
     </>
   );
 }

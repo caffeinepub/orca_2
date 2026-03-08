@@ -7,8 +7,9 @@ import {
   getWeekDays,
   toDateKey,
 } from "@/utils/calendarUtils";
+import { type ExternalEvent, loadExternalEvents } from "@/utils/icalUtils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CalendarDayCell, { getEventsForDay } from "./CalendarDayCell";
 
 interface Props {
@@ -31,6 +32,11 @@ export default function CalendarGrid({
   const [viewType, setViewType] = useState<"month" | "week">("month");
   const [hiddenProjects, setHiddenProjects] = useState<Set<string>>(new Set());
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
+  const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([]);
+
+  useEffect(() => {
+    setExternalEvents(loadExternalEvents());
+  }, []);
 
   const toggleType = (t: string) => {
     setHiddenTypes((prev) => {
@@ -178,7 +184,9 @@ export default function CalendarGrid({
         <span className="text-[10px] text-gray-400 uppercase tracking-wider">
           Show:
         </span>
-        {(["stages", "tasks", "milestones", "holidays"] as const).map((t) => (
+        {(
+          ["stages", "tasks", "milestones", "holidays", "external"] as const
+        ).map((t) => (
           <button
             key={t}
             type="button"
@@ -192,7 +200,9 @@ export default function CalendarGrid({
                     ? "#d1d5db"
                     : t === "milestones"
                       ? "#fde68a"
-                      : "#fbbf24",
+                      : t === "external"
+                        ? "#c084fc"
+                        : "#fbbf24",
               backgroundColor: hiddenTypes.has(t)
                 ? "transparent"
                 : t === "stages"
@@ -201,7 +211,9 @@ export default function CalendarGrid({
                     ? "#f3f4f6"
                     : t === "milestones"
                       ? "#fef3c7"
-                      : "#fef3c7",
+                      : t === "external"
+                        ? "#f3e8ff"
+                        : "#fef3c7",
             }}
           >
             {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -236,6 +248,14 @@ export default function CalendarGrid({
             if (!t.isMilestone && hiddenTypes.has("tasks")) return false;
             return true;
           });
+          const dayExternalEvents = hiddenTypes.has("external")
+            ? []
+            : externalEvents.filter((e) => {
+                const d = date.getTime();
+                const s = new Date(`${e.startDate}T00:00:00`).getTime();
+                const en = new Date(`${e.endDate}T00:00:00`).getTime();
+                return d >= s && d <= en;
+              });
           return (
             <CalendarDayCell
               key={toDateKey(date)}
@@ -247,6 +267,7 @@ export default function CalendarGrid({
               taskEvents={filteredTasks}
               onStageClick={handleStageClick}
               showHolidays={!hiddenTypes.has("holidays")}
+              externalEvents={dayExternalEvents}
             />
           );
         })}

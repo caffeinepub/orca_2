@@ -65,10 +65,23 @@ export default function TeamPage({
     { id: "timesheets", label: "My Timesheets", icon: Clock },
   ];
 
+  const visibleTabs = tabs.filter((tab) => {
+    if (currentUserRole === "Super Admin") return true;
+    if (tab.id === "members")
+      return hasPermission(currentUserRole, "team_members_tab");
+    if (tab.id === "holidays")
+      return hasPermission(currentUserRole, "holiday_tab");
+    if (tab.id === "rolladex")
+      return hasPermission(currentUserRole, "rolladex_tab");
+    if (tab.id === "timesheets")
+      return hasPermission(currentUserRole, "timesheet_summary");
+    return true;
+  });
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex items-center gap-1 px-6 py-3 border-b bg-card flex-shrink-0">
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             type="button"
             key={tab.id}

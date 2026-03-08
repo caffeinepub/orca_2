@@ -5,13 +5,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PROJECT_COLORS, type Project } from "@/types";
+import { PROJECT_COLORS, type Project, type Stage, type Task } from "@/types";
 import { useEffect, useState } from "react";
+import SaveTemplateModal from "./SaveTemplateModal";
 
 interface EditProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
   project: Project;
+  stages?: Stage[];
+  tasks?: Task[];
   onSave: (updates: Partial<Project>) => void;
   onArchive: () => void;
   onDelete: () => void;
@@ -21,6 +24,8 @@ export default function EditProjectModal({
   isOpen,
   onClose,
   project,
+  stages = [],
+  tasks = [],
   onSave,
   onArchive,
   onDelete,
@@ -28,6 +33,7 @@ export default function EditProjectModal({
   const [name, setName] = useState(project.name);
   const [selectedColor, setSelectedColor] = useState(project.color);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset all fields when project identity changes
   useEffect(() => {
@@ -117,6 +123,14 @@ export default function EditProjectModal({
           <div className="flex gap-2 mr-auto">
             <button
               type="button"
+              onClick={() => setShowSaveTemplate(true)}
+              className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 border border-blue-300 rounded-lg"
+              data-ocid="edit_project.save_template.button"
+            >
+              Save as Template
+            </button>
+            <button
+              type="button"
               onClick={onArchive}
               className="px-3 py-2 text-sm text-amber-600 hover:bg-amber-50 border border-amber-300 rounded-lg"
               data-ocid="edit_project.archive.button"
@@ -163,6 +177,13 @@ export default function EditProjectModal({
           </div>
         </DialogFooter>
       </DialogContent>
+      <SaveTemplateModal
+        isOpen={showSaveTemplate}
+        onClose={() => setShowSaveTemplate(false)}
+        project={project}
+        stages={stages}
+        tasks={tasks}
+      />
     </Dialog>
   );
 }

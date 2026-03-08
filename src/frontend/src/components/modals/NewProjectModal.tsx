@@ -6,12 +6,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PROJECT_COLORS } from "@/types";
-import { useState } from "react";
+import type { ProjectTemplate } from "@/types/project";
+import { loadTemplates } from "@/utils/templateStorage";
+import { useEffect, useState } from "react";
 
 interface NewProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateProject: (name: string, color: string) => void;
+  onCreateProject: (name: string, color: string, templateId?: string) => void;
 }
 
 export default function NewProjectModal({
@@ -21,10 +23,22 @@ export default function NewProjectModal({
 }: NewProjectModalProps) {
   const [name, setName] = useState("");
   const [selectedColor, setSelectedColor] = useState(PROJECT_COLORS[14]);
+  const [templates, setTemplates] = useState<ProjectTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (isOpen) setTemplates(loadTemplates());
+  }, [isOpen]);
 
   const handleSubmit = () => {
     if (!name.trim()) return;
-    onCreateProject(name.trim(), selectedColor);
+    onCreateProject(
+      name.trim(),
+      selectedColor,
+      selectedTemplateId || undefined,
+    );
     setName("");
     setSelectedColor(PROJECT_COLORS[14]);
     onClose();
@@ -67,6 +81,28 @@ export default function NewProjectModal({
               autoFocus
               data-ocid="new_project.name.input"
             />
+          </div>
+          <div>
+            <label
+              htmlFor="new-project-template"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Template (optional)
+            </label>
+            <select
+              id="new-project-template"
+              value={selectedTemplateId || ""}
+              onChange={(e) => setSelectedTemplateId(e.target.value || null)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              data-ocid="new_project.template.select"
+            >
+              <option value="">Blank Project</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} {t.id.startsWith("builtin") ? "(built-in)" : ""}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700 mb-2">Color</p>

@@ -16,7 +16,7 @@ interface BoardProps {
     projectId: string,
     folderType: "project" | "project_admin",
   ) => void;
-  onCreateProject: (name: string, color: string) => void;
+  onCreateProject: (name: string, color: string, templateId?: string) => void;
   onDeleteProject: (projectId: string) => void;
   onUpdateProject: (projectId: string, updates: Partial<Project>) => void;
   onArchiveProject: (projectId: string, archived: boolean) => void;
@@ -164,8 +164,8 @@ export default function Board({
       <NewProjectModal
         isOpen={showNewProjectModal}
         onClose={() => setShowNewProjectModal(false)}
-        onCreateProject={(name, color) => {
-          onCreateProject(name, color);
+        onCreateProject={(name, color, templateId) => {
+          onCreateProject(name, color, templateId);
           setShowNewProjectModal(false);
         }}
       />

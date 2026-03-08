@@ -26,7 +26,18 @@ export type Feature =
   | "view_permissions_grid"
   | "timesheet_summary"
   | "hr_folders"
-  | "resource_planning";
+  | "resource_planning"
+  | "budget_tab"
+  | "proposal_tab"
+  | "teamtalk_tab"
+  | "info_modal"
+  | "admin_file_modal"
+  | "focus_mode"
+  | "gantt_chart_tab"
+  | "team_members_tab"
+  | "rolladex_tab"
+  | "holiday_tab"
+  | "view_all_holidays";
 export const ROLE_HIERARCHY: AppRole[] = [
   "Super Admin",
   "Admin",

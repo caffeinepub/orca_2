@@ -13,7 +13,7 @@ interface BoardPageProps {
     projectId: string,
     folderType: "project" | "project_admin",
   ) => void;
-  onCreateProject: (name: string, color: string) => void;
+  onCreateProject: (name: string, color: string, templateId?: string) => void;
   onDeleteProject: (id: string) => void;
   onUpdateProject: (id: string, updates: Partial<Project>) => void;
   onArchiveProject: (id: string, archived: boolean) => void;

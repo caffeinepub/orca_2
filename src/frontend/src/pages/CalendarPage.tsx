@@ -1,6 +1,8 @@
 import CalendarGrid from "@/components/calendar/CalendarGrid";
+import CalendarSyncPanel from "@/components/calendar/CalendarSyncPanel";
 import GanttChart from "@/components/calendar/GanttChart";
 import type { Project, Stage, Task } from "@/types";
+import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 
 interface CalendarPageProps {
@@ -19,6 +21,7 @@ export default function CalendarPage({
   onUpdateTask,
 }: CalendarPageProps) {
   const [view, setView] = useState<"calendar" | "gantt">("calendar");
+  const [syncOpen, setSyncOpen] = useState(false);
 
   return (
     <div className="h-full flex flex-col">
@@ -42,6 +45,14 @@ export default function CalendarPage({
             Gantt Chart
           </button>
         </div>
+        <button
+          type="button"
+          data-ocid="calendar.sync.open_modal_button"
+          onClick={() => setSyncOpen(true)}
+          className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded border"
+        >
+          <RefreshCw className="w-3 h-3" /> Sync
+        </button>
       </div>
 
       {/* View content */}
@@ -63,6 +74,14 @@ export default function CalendarPage({
           />
         )}
       </div>
+
+      <CalendarSyncPanel
+        isOpen={syncOpen}
+        onClose={() => setSyncOpen(false)}
+        projects={projects}
+        stages={stages}
+        tasks={tasks}
+      />
     </div>
   );
 }

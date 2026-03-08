@@ -23,7 +23,7 @@ interface TimelineViewProps {
   onDeleteProject: (projectId: string) => void;
   onUpdateProject: (projectId: string, updates: Partial<Project>) => void;
   onArchiveProject: (projectId: string, archived: boolean) => void;
-  onCreateProject: (name: string, color: string) => void;
+  onCreateProject: (name: string, color: string, templateId?: string) => void;
 }
 
 export default function TimelineView({

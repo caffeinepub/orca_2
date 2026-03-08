@@ -18,6 +18,17 @@ export const FEATURE_LABELS: Record<Feature, string> = {
   timesheet_summary: "Timesheet Summary",
   hr_folders: "HR Folders",
   resource_planning: "Resource Planning",
+  budget_tab: "Budget Tab",
+  proposal_tab: "Proposal Tab",
+  teamtalk_tab: "Team Talk Tab",
+  info_modal: "Project Info Modal",
+  admin_file_modal: "Admin Files Modal",
+  focus_mode: "Focus Mode (Timeline)",
+  gantt_chart_tab: "Gantt Chart Tab",
+  team_members_tab: "Team Members Tab",
+  rolladex_tab: "Rolladex Tab",
+  holiday_tab: "Holidays Tab",
+  view_all_holidays: "View All Holiday Requests",
 };
 
 export const FEATURE_CATEGORIES: { label: string; features: Feature[] }[] = [
@@ -41,6 +52,27 @@ export const FEATURE_CATEGORIES: { label: string; features: Feature[] }[] = [
   {
     label: "Team",
     features: ["manage_team", "change_roles", "view_permissions_grid"],
+  },
+  {
+    label: "Board Tabs",
+    features: ["budget_tab", "proposal_tab", "teamtalk_tab", "focus_mode"],
+  },
+  {
+    label: "Modals",
+    features: ["info_modal", "admin_file_modal"],
+  },
+  {
+    label: "Calendar",
+    features: ["gantt_chart_tab"],
+  },
+  {
+    label: "Team Tabs",
+    features: [
+      "team_members_tab",
+      "rolladex_tab",
+      "holiday_tab",
+      "view_all_holidays",
+    ],
   },
   {
     label: "Special",
@@ -69,6 +101,17 @@ const DEFAULT_CONFIG: Record<AppRole, Feature[]> = {
     "manage_team",
     "view_permissions_grid",
     "resource_planning",
+    "budget_tab",
+    "proposal_tab",
+    "teamtalk_tab",
+    "info_modal",
+    "admin_file_modal",
+    "focus_mode",
+    "gantt_chart_tab",
+    "team_members_tab",
+    "rolladex_tab",
+    "holiday_tab",
+    "view_all_holidays",
   ],
   Standard: [
     "view_all_projects",
@@ -77,8 +120,14 @@ const DEFAULT_CONFIG: Record<AppRole, Feature[]> = {
     "create_task",
     "edit_any_task",
     "resource_planning",
+    "budget_tab",
+    "teamtalk_tab",
+    "info_modal",
+    "focus_mode",
+    "gantt_chart_tab",
+    "holiday_tab",
   ],
-  Freelancer: ["create_task"],
+  Freelancer: ["create_task", "holiday_tab"],
 };
 
 export const ALL_PAGES: NavPage[] = [

@@ -33,6 +33,7 @@ interface Props {
   taskEvents: TaskEvent[];
   onStageClick: (stage: Stage) => void;
   showHolidays?: boolean;
+  externalEvents?: { id: string; title: string; source: string }[];
 }
 
 export default function CalendarDayCell({
@@ -44,11 +45,12 @@ export default function CalendarDayCell({
   taskEvents,
   onStageClick,
   showHolidays = true,
+  externalEvents = [],
 }: Props) {
   const isT = isSameDay(date, today);
   const isWE = date.getDay() === 0 || date.getDay() === 6;
   const maxShow = tall ? 6 : 3;
-  const allEvents = [...stageEvents, ...taskEvents];
+  const allEvents = [...stageEvents, ...taskEvents, ...externalEvents];
   const overflow = allEvents.length > maxShow ? allEvents.length - maxShow : 0;
 
   return (
@@ -120,6 +122,19 @@ export default function CalendarDayCell({
               🌴 {h.memberName}
             </div>
           ))}
+        {externalEvents.map((ev) => (
+          <div
+            key={ev.id}
+            className="text-[10px] px-1 py-0.5 rounded truncate"
+            style={{
+              backgroundColor: "#f3e8ff",
+              color: "#6b21a8",
+              border: "1px dashed #c084fc",
+            }}
+          >
+            {ev.title}
+          </div>
+        ))}
         {overflow > 0 && (
           <div className="text-[9px] text-gray-400 px-1">+{overflow} more</div>
         )}

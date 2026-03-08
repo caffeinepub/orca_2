@@ -5,6 +5,7 @@ import {
   toDateKey,
 } from "@/utils/calendarUtils";
 import { getApprovedHolidays, isOnHoliday } from "@/utils/holidays";
+import { type ExternalEvent, loadExternalEvents } from "@/utils/icalUtils";
 import { triggerCloudSync } from "@/utils/storage";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -44,6 +45,10 @@ export default function GanttChart({
   );
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
   const [resourceDays, setResourceDays] = useState<Record<string, number>>({});
+  const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([]);
+  useEffect(() => {
+    setExternalEvents(loadExternalEvents());
+  }, []);
 
   const dates = getGanttDateRange(today);
   const dateIndex = (d: Date) =>
@@ -138,6 +143,27 @@ export default function GanttChart({
         endDate: h.endDate,
         indent: 1,
         color: "#fef3c7",
+      });
+    }
+  }
+
+  // Add external calendar rows
+  if (externalEvents.length > 0 && !hiddenTypes.has("external")) {
+    rows.push({
+      type: "header",
+      id: "external-header",
+      label: "📅 External Calendars",
+      indent: 0,
+    });
+    for (const ev of externalEvents) {
+      rows.push({
+        type: "external",
+        id: ev.id,
+        label: ev.title,
+        startDate: ev.startDate,
+        endDate: ev.endDate,
+        indent: 1,
+        color: "#f3e8ff",
       });
     }
   }
@@ -295,7 +321,9 @@ export default function GanttChart({
         </button>
         <div className="w-px h-4 bg-gray-200 mx-2" />
         <span className="text-xs text-gray-500">Show:</span>
-        {(["stages", "tasks", "milestones", "holidays"] as const).map((t) => (
+        {(
+          ["stages", "tasks", "milestones", "holidays", "external"] as const
+        ).map((t) => (
           <button
             key={t}
             type="button"
@@ -315,7 +343,9 @@ export default function GanttChart({
                     ? "#d1d5db"
                     : t === "milestones"
                       ? "#fde68a"
-                      : "#fbbf24",
+                      : t === "external"
+                        ? "#c084fc"
+                        : "#fbbf24",
               backgroundColor: hiddenTypes.has(t)
                 ? "transparent"
                 : t === "stages"
@@ -324,7 +354,9 @@ export default function GanttChart({
                     ? "#f3f4f6"
                     : t === "milestones"
                       ? "#fef3c7"
-                      : "#fef3c7",
+                      : t === "external"
+                        ? "#f3e8ff"
+                        : "#fef3c7",
             }}
           >
             {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -630,6 +662,63 @@ export default function GanttChart({
                           }}
                         >
                           🌴 {row.label}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={row.id}
+                      className="absolute border-b"
+                      style={{
+                        top,
+                        left: 0,
+                        width: totalWidth,
+                        height: ROW_H,
+                        borderColor: "#e5e7eb",
+                      }}
+                    />
+                  );
+                }
+                // external calendar row
+                if (row.type === "external" && row.startDate && row.endDate) {
+                  const sIdx = dateIndex(new Date(`${row.startDate}T00:00:00`));
+                  const eIdx = dateIndex(new Date(`${row.endDate}T00:00:00`));
+                  if (sIdx >= 0 && eIdx >= 0) {
+                    const barLeft = sIdx * dayWidth;
+                    const barWidth = (eIdx - sIdx + 1) * dayWidth;
+                    return (
+                      <div
+                        key={row.id}
+                        className="absolute border-b"
+                        style={{
+                          top,
+                          left: 0,
+                          width: totalWidth,
+                          height: ROW_H,
+                          borderColor: "#e5e7eb",
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "4px",
+                            left: `${barLeft}px`,
+                            width: `${barWidth}px`,
+                            height: `${ROW_H - 8}px`,
+                            backgroundColor: "#f3e8ff",
+                            borderRadius: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            paddingLeft: "8px",
+                            fontSize: "11px",
+                            fontWeight: 500,
+                            color: "#6b21a8",
+                            border: "1px dashed #c084fc",
+                            zIndex: 2,
+                          }}
+                        >
+                          {row.label}
                         </div>
                       </div>
                     );
