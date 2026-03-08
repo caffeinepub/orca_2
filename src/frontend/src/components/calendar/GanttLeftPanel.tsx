@@ -56,107 +56,116 @@ const GanttLeftPanel = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="shrink-0 overflow-y-auto overflow-x-hidden border-r"
-        style={{ width: 256, scrollbarWidth: "none" }}
+        className="shrink-0 flex flex-col overflow-hidden border-r"
+        style={{ width: 256 }}
       >
-        <div style={{ position: "relative", height: totalHeight }}>
-          {/* Tree rows — absolute positioned to match right panel exactly */}
-          {rows.map((row, i) => {
-            const isProject = row.type === "project";
-            const isStage = row.type === "stage";
-            const isExpProject = expandedProjects.has(row.id);
-            const isExpStage = expandedStages.has(row.id);
-            return (
-              <button
-                type="button"
-                key={`${row.id}-${i}`}
-                data-ocid={
-                  isProject
-                    ? "gantt.project.row"
-                    : isStage
-                      ? "gantt.stage.row"
-                      : "gantt.task.row"
-                }
-                className={`absolute w-full flex items-center gap-1 px-2 select-none cursor-pointer hover:bg-gray-50 ${isProject ? "font-semibold text-xs" : "text-xs text-gray-700"}`}
-                style={{
-                  top: i * ROW_H,
-                  height: ROW_H,
-                  paddingLeft: 8 + row.indent * 16,
-                  borderBottom: "1px solid #e5e7eb",
-                  boxSizing: "border-box",
-                }}
-                onClick={() => {
-                  if (isProject) onToggleProject(row.id);
-                  else if (isStage) onToggleStage(row.id);
-                }}
-              >
-                {isProject &&
-                  (isExpProject ? (
-                    <ChevronDown className="w-3 h-3 shrink-0" />
-                  ) : (
-                    <ChevronRight className="w-3 h-3 shrink-0" />
-                  ))}
-                {isStage &&
-                  (isExpStage ? (
-                    <ChevronDown className="w-3 h-3 shrink-0 text-gray-400" />
-                  ) : (
-                    <ChevronRight className="w-3 h-3 shrink-0 text-gray-400" />
-                  ))}
-                {row.color && (
-                  <span
-                    className="w-2.5 h-2.5 rounded-sm shrink-0"
-                    style={{ backgroundColor: row.color }}
-                  />
-                )}
-                <span className="truncate">{row.label}</span>
-              </button>
-            );
-          })}
-
-          {/* Resource planning section — also absolute positioned */}
-          {resourceMembers.length > 0 && (
-            <>
-              <div
-                className="absolute w-full px-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center"
-                style={{
-                  top: rows.length * ROW_H,
-                  height: 32,
-                  borderTop: "1px solid #e5e7eb",
-                  borderBottom: "1px solid #e5e7eb",
-                  boxSizing: "border-box",
-                }}
-              >
-                Resource Planning
-              </div>
-              {resourceMembers.map((m, mi) => (
-                <div
-                  key={m.id}
-                  className="absolute w-full flex items-center gap-2 px-3"
+        {/* Spacer matching the right panel's sticky date header (48px) */}
+        <div className="shrink-0 border-b bg-white" style={{ height: 48 }} />
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto overflow-x-hidden"
+          style={{ scrollbarWidth: "none" }}
+        >
+          <div style={{ position: "relative", height: totalHeight }}>
+            {/* Tree rows — absolute positioned to match right panel exactly */}
+            {rows.map((row, i) => {
+              const isProject = row.type === "project";
+              const isStage = row.type === "stage";
+              const isExpProject = expandedProjects.has(row.id);
+              const isExpStage = expandedStages.has(row.id);
+              return (
+                <button
+                  type="button"
+                  key={`${row.id}-${i}`}
+                  data-ocid={
+                    isProject
+                      ? "gantt.project.row"
+                      : isStage
+                        ? "gantt.stage.row"
+                        : "gantt.task.row"
+                  }
+                  className={`absolute w-full flex items-center gap-1 px-2 select-none cursor-pointer hover:bg-gray-50 ${isProject ? "font-semibold text-xs" : "text-xs text-gray-700"}`}
                   style={{
-                    top: rows.length * ROW_H + 32 + mi * ROW_H,
+                    top: i * ROW_H,
                     height: ROW_H,
+                    paddingLeft: 8 + row.indent * 16,
+                    borderBottom: "1px solid #e5e7eb",
+                    boxSizing: "border-box",
+                  }}
+                  onClick={() => {
+                    if (isProject) onToggleProject(row.id);
+                    else if (isStage) onToggleStage(row.id);
+                  }}
+                >
+                  {isProject &&
+                    (isExpProject ? (
+                      <ChevronDown className="w-3 h-3 shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-3 h-3 shrink-0" />
+                    ))}
+                  {isStage &&
+                    (isExpStage ? (
+                      <ChevronDown className="w-3 h-3 shrink-0 text-gray-400" />
+                    ) : (
+                      <ChevronRight className="w-3 h-3 shrink-0 text-gray-400" />
+                    ))}
+                  {row.color && (
+                    <span
+                      className="w-2.5 h-2.5 rounded-sm shrink-0"
+                      style={{ backgroundColor: row.color }}
+                    />
+                  )}
+                  <span className="truncate">{row.label}</span>
+                </button>
+              );
+            })}
+
+            {/* Resource planning section — also absolute positioned */}
+            {resourceMembers.length > 0 && (
+              <>
+                <div
+                  className="absolute w-full px-3 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center"
+                  style={{
+                    top: rows.length * ROW_H,
+                    height: 32,
+                    borderTop: "1px solid #e5e7eb",
                     borderBottom: "1px solid #e5e7eb",
                     boxSizing: "border-box",
                   }}
                 >
+                  Resource Planning
+                </div>
+                {resourceMembers.map((m, mi) => (
                   <div
-                    className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-bold text-white"
-                    style={{ backgroundColor: m.avatarColor || "#6b7280" }}
+                    key={m.id}
+                    className="absolute w-full flex items-center gap-2 px-3"
+                    style={{
+                      top: rows.length * ROW_H + 32 + mi * ROW_H,
+                      height: ROW_H,
+                      borderBottom: "1px solid #e5e7eb",
+                      boxSizing: "border-box",
+                    }}
                   >
-                    {m.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium truncate">{m.name}</div>
-                    <div className="text-[10px] text-gray-400">
-                      {m.total.toFixed(1)} days
+                    <div
+                      className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-bold text-white"
+                      style={{ backgroundColor: m.avatarColor || "#6b7280" }}
+                    >
+                      {m.initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium truncate">
+                        {m.name}
+                      </div>
+                      <div className="text-[10px] text-gray-400">
+                        {m.total.toFixed(1)} days
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </>
-          )}
+                ))}
+              </>
+            )}
+          </div>
         </div>
       </div>
     );

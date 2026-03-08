@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
 import type { Project, Stage, Task } from "@/types";
-import { EyeOff, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import ProjectCard from "./ProjectCard";
 import NewProjectModal from "./modals/NewProjectModal";
@@ -109,16 +108,6 @@ export default function Board({
   return (
     <div className="flex-1 overflow-x-auto">
       <div className="flex flex-col gap-4 p-6 min-h-full">
-        {focusedProjectId && onToggleFocus && (
-          <Button
-            variant="outline"
-            onClick={() => onToggleFocus(focusedProjectId)}
-            className="self-start"
-          >
-            <EyeOff className="w-4 h-4 mr-2" aria-hidden="true" /> Show All
-            Projects
-          </Button>
-        )}
         <div className="flex gap-4 items-start">
           {filteredProjects.map((project) => (
             <div
